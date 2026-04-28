@@ -1,6 +1,6 @@
 #!/bin/bash
 # =================================================================
-# KONAPAPER — Download Function
+# BOORUPAPER — Download Function
 # Handles API querying, filtering, and image downloading
 # =================================================================
 

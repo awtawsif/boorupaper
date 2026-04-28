@@ -1,6 +1,6 @@
 #!/bin/bash
 # =================================================================
-# KONAPAPER — Display Server Detection & Wallpaper Setting
+# BOORUPAPER — Display Server Detection & Wallpaper Setting
 # Detects Wayland/X11 and available wallpaper tools
 # =================================================================
 

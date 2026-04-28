@@ -15,7 +15,7 @@ setup_file() {
 
 @test "load_config: sources user config when it exists" {
     # Write a test config to the user config path
-    cat > "$HOME/.config/konapaper/konapaper.conf" <<'EOF'
+    cat > "$HOME/.config/boorupaper/boorupaper.conf" <<'EOF'
 TAGS="test_config_tags"
 LIMIT=99
 RATING="q"
@@ -30,10 +30,10 @@ EOF
 
 @test "load_config: handles missing config gracefully" {
     # Ensure no user config exists
-    rm -f "$HOME/.config/konapaper/konapaper.conf"
+    rm -f "$HOME/.config/boorupaper/boorupaper.conf"
     # SCRIPT_DIR is set by main script; point to a dir with no config
     local saved_script_dir="$SCRIPT_DIR"
-    SCRIPT_DIR="/tmp/nonexistent_konapaper_$$"
+    SCRIPT_DIR="/tmp/nonexistent_boorupaper_$$"
     mkdir -p "$SCRIPT_DIR"
 
     source_lib "config"
@@ -96,8 +96,8 @@ EOF
 
 @test "process_random_tags: loads from file path" {
     # Write tags to a file
-    local tags_file="$HOME/.config/konapaper/test_tags.txt"
-    mkdir -p "$HOME/.config/konapaper"
+    local tags_file="$HOME/.config/boorupaper/test_tags.txt"
+    mkdir -p "$HOME/.config/boorupaper"
     printf "landscape\nscenic\nsky\n" > "$tags_file"
 
     RANDOM_TAGS_LIST="$tags_file"

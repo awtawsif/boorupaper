@@ -1,6 +1,6 @@
 #!/bin/bash
 # =================================================================
-# KONAPAPER — Wallpaper Rotator for Wayland and X11
+# BOORUPAPER — Wallpaper Rotator for Wayland and X11
 # Fetches wallpapers from Moebooru-based sites like Konachan.net
 # Supports: tags, pools, artist, score filters, size limits, preload cache, cleanup
 # =================================================================
@@ -53,7 +53,7 @@ check_dependencies() {
     done
     if [[ ${#missing[@]} -gt 0 ]]; then
         echo "Error: missing required dependencies: ${missing[*]}" >&2
-        echo "Please install them before running Konapaper." >&2
+        echo "Please install them before running Boorupaper." >&2
         exit 1
     fi
 }
@@ -133,8 +133,8 @@ MIN_HEIGHT_NUM=${MIN_HEIGHT:-0}
 MAX_HEIGHT_NUM=${MAX_HEIGHT:-0}
 
 # --- Paths ---
-LOCKFILE="/tmp/konapaper_setter.lock"
-CACHE_DIR="$HOME/.cache/konapaper"
+LOCKFILE="/tmp/boorupaper_setter.lock"
+CACHE_DIR="$HOME/.cache/boorupaper"
 mkdir -p "$CACHE_DIR"
 
 PRELOAD_DIR="$CACHE_DIR/preload_$RATING"
@@ -153,7 +153,7 @@ trap 'flock -u 9 2>/dev/null; rm -f "$LOCKFILE"' EXIT
 exec 9>"$LOCKFILE"
 if ! flock -n 9; then
     echo "Error: another instance is already running. Exiting." >&2
-    notify_error "Already Running" "Another Konapaper instance is running"
+    notify_error "Already Running" "Another Boorupaper instance is running"
     exit 1
 fi
 
@@ -215,7 +215,7 @@ if [ -n "$next_wall" ]; then
 else
     log_write "INFO" "No cached wallpapers found, downloading new one"
     echo "No cached wallpapers found; downloading..." >&2
-    notify_progress_update "Downloading" "Fetching wallpaper from Konachan..."
+    notify_progress_update "Downloading" "Fetching wallpaper from API..."
 
     temp_wallpaper=$(mktemp "$CACHE_DIR/current.tmp.XXXXXX")
     if download_wallpaper "$temp_wallpaper"; then

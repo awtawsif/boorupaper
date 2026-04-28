@@ -1,13 +1,13 @@
 #!/bin/bash
 # =================================================================
-# KONAPAPER — CLI Argument Parsing
+# BOORUPAPER — CLI Argument Parsing
 # Parses command-line arguments and displays help text
 # =================================================================
 
 display_help() {
     echo ""
     echo "${C_BOLD_CYAN}╔══════════════════════════════════════════════════════════╗${C_RESET}"
-    echo "${C_BOLD_CYAN}║${C_RESET}               ${C_BOLD_MAGENTA}✦  Konapaper  —  Help Menu  ✦${C_RESET}               ${C_BOLD_CYAN}║${C_RESET}"
+    echo "${C_BOLD_CYAN}║${C_RESET}               ${C_BOLD_MAGENTA}✦  Boorupaper  —  Help Menu  ✦${C_RESET}               ${C_BOLD_CYAN}║${C_RESET}"
     echo "${C_BOLD_CYAN}╚══════════════════════════════════════════════════════════╝${C_RESET}"
     echo "${C_BOLD_WHITE}Usage:${C_RESET} ${C_CYAN}$0${C_RESET} [options]"
     echo ""
@@ -165,7 +165,7 @@ parse_cli_args() {
                 display_help
                 exit 0 ;;
             -v|--version)
-                echo "Konapaper v${VERSION}"
+                echo "Boorupaper v${VERSION}"
                 exit 0 ;;
             *) echo "Unknown parameter: $1" >&2; exit 1 ;;
         esac

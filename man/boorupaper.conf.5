@@ -1,13 +1,13 @@
 .\" =================================================================
-.\" KONAPAPER.CONF(5)      Konapaper User Manual     KONAPAPER.CONF(5)
+.\" BOORUPAPER.CONF(5)      Boorupaper User Manual     BOORUPAPER.CONF(5)
 .\" =================================================================
-.TH KONAPAPER.CONF 5 "April 2026" "Konapaper 1.3.0" "Konapaper User Manual"
+.TH BOORUPAPER.CONF 5 "April 2026" "Boorupaper 1.3.0" "Boorupaper User Manual"
 .SH NAME
-konapaper.conf \- user configuration file for \fBkonapaper\fR(1)
+boorupaper.conf \- user configuration file for \fBboorupaper\fR(1)
 .SH SYNOPSIS
-.B ~/.config/konapaper/konapaper.conf
+.B ~/.config/boorupaper/boorupaper.conf
 .SH DESCRIPTION
-This file contains user overrides for the Konapaper wallpaper rotator.
+This file contains user overrides for the Boorupaper wallpaper rotator.
 All defaults are defined in the script itself; this file is only needed
 when you want to change behaviour from the defaults.
 .PP
@@ -16,8 +16,8 @@ Each option is a single line in the form:
 .IP
 .B VARIABLE="value"
 .PP
-To see all available options and their defaults, run \fBkonapaper.sh --help\fR
-or use the interactive setup wizard: \fBkonapaper.sh --init-interactive\fR
+To see all available options and their defaults, run \fBboorupaper.sh --help\fR
+or use the interactive setup wizard: \fBboorupaper.sh --init-interactive\fR
 .SH SEARCH PARAMETERS
 .TP
 .B TAGS
@@ -110,7 +110,7 @@ Can be a bash array or a file path (one tag per line).
 .br
 Example: \fBRANDOM_TAGS_LIST=("landscape" "scenic" "sky")\fR
 .br
-Example: \fBRANDOM_TAGS_LIST="$HOME/.config/konapaper/discovered_tags.txt"\fR
+Example: \fBRANDOM_TAGS_LIST="$HOME/.config/boorupaper/discovered_tags.txt"\fR
 .br
 Default: \fB("landscape" "scenic" "sky" "clouds" "water" "original" "touhou" "building")\fR
 .TP
@@ -165,7 +165,7 @@ Default: \fB"false"\fR
 .B LOG_FILE
 Path to the log file.
 .br
-Default: \fB~/.config/konapaper/konapaper.log\fR
+Default: \fB~/.config/boorupaper/boorupaper.log\fR
 .TP
 .B LOG_LEVEL
 Detail level: \fBbasic\fR, \fBdetailed\fR, or \fBverbose\fR.
@@ -230,7 +230,7 @@ WALLPAPER_COMMAND="mpvpaper -f -o \\"loop\\" ALL {IMAGE}"
 .fi
 .SH NOTES
 .IP \[bu] 2
-Changes to this file take effect on the next run of \fBkonapaper.sh\fR.
+Changes to this file take effect on the next run of \fBboorupaper.sh\fR.
 .IP \[bu]
 Ensure all custom commands are installed and available in your \fBPATH\fR.
 .IP \[bu]
@@ -238,9 +238,9 @@ All variables defined here can be overridden by their respective command-line fl
 .IP \[bu]
 For other Moebooru-based sites, set \fBBASE_URL\fR in your config.
 .SH "SEE ALSO"
-.BR konapaper (1)
+.BR boorupaper (1)
 .SH BUGS
-Report bugs at: https://github.com/awtawsif/konapaper/issues
+Report bugs at: https://github.com/awtawsif/boorupaper/issues
 .\" =================================================================
-.\" KONAPAPER.CONF(5)                      April 2026                    KONAPAPER.CONF(5)
+.\" BOORUPAPER.CONF(5)                      April 2026                    BOORUPAPER.CONF(5)
 .\" =================================================================

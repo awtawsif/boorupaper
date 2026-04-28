@@ -1,12 +1,12 @@
 #!/bin/bash
 # =================================================================
-# KONAPAPER — Configuration Loading
+# BOORUPAPER — Configuration Loading
 # Config file resolution and loading
 # =================================================================
 
 # User config path only. Defaults live in constants.sh; the user config
-# overrides them. See man/konapaper.conf.5 for documentation.
-CONFIG_FILE="$HOME/.config/konapaper/konapaper.conf"
+# overrides them. See man/boorupaper.conf.5 for documentation.
+CONFIG_FILE="$HOME/.config/boorupaper/boorupaper.conf"
 
 load_config() {
     if [[ -f "$CONFIG_FILE" ]]; then
@@ -23,7 +23,7 @@ load_config() {
     
     # Load logging configuration
     ENABLE_LOGGING=${ENABLE_LOGGING:-false}
-    LOG_FILE=${LOG_FILE:-"$HOME/.config/konapaper/konapaper.log"}
+    LOG_FILE=${LOG_FILE:-"$HOME/.config/boorupaper/boorupaper.log"}
     LOG_LEVEL=${LOG_LEVEL:-"detailed"}
     LOG_ROTATION=${LOG_ROTATION:-true}
 }

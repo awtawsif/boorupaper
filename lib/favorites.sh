@@ -1,6 +1,6 @@
 #!/bin/bash
 # =================================================================
-# KONAPAPER — Favorites Management
+# BOORUPAPER — Favorites Management
 # Save, list, and set wallpapers from favorites
 # =================================================================
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 # =================================================================
-# KONAPAPER — Notification Toasts
+# BOORUPAPER — Notification Toasts
 # Progressive progress toasts using notify-send with replace-id
 # =================================================================
 
@@ -37,7 +37,7 @@ notify_new() {
     fi
 
     NOTIFY_REPLACE_ID=$(notify-send \
-        --app-name="Konapaper" \
+        --app-name="Boorupaper" \
         --urgency="$urgency" \
         --expire-time="$timeout" \
         --print-id \
@@ -70,7 +70,7 @@ notify_update() {
     fi
 
     notify-send \
-        --app-name="Konapaper" \
+        --app-name="Boorupaper" \
         --urgency="$urgency" \
         --expire-time="$timeout" \
         --replace-id="$NOTIFY_REPLACE_ID" \
@@ -93,7 +93,7 @@ notify_progress_start() {
         body="$details"
     fi
 
-    notify_new "🔍 Konapaper" "$body" "normal" 0
+    notify_new "🔍 Boorupaper" "$body" "normal" 0
 }
 
 # Update the progress toast with a new stage.
@@ -107,7 +107,7 @@ notify_progress_update() {
         body="$details"
     fi
 
-    notify_update "🔍 Konapaper" "$body" "normal" 0
+    notify_update "🔍 Boorupaper" "$body" "normal" 0
 }
 
 # Send the final completion toast.

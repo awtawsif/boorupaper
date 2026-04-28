@@ -1,5 +1,5 @@
 #!/bin/bash
-# Test runner for Konapaper
+# Test runner for Boorupaper
 # Runs all bats tests or selected test files
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -20,7 +20,7 @@ else
     TEST_FILES=("$TESTS_DIR"/*.bats)
 fi
 
-echo "Running Konapaper tests..."
+echo "Running Boorupaper tests..."
 echo ""
 
 # Run with pretty output

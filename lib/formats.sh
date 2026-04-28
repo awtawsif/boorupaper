@@ -1,6 +1,6 @@
 #!/bin/bash
 # =================================================================
-# KONAPAPER — Animated Format Helpers
+# BOORUPAPER — Animated Format Helpers
 # Format detection, resolution, extension parsing, and warnings
 # =================================================================
 

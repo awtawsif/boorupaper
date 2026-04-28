@@ -1,8 +1,8 @@
-# Konapaper
+# Boorupaper
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Shell](https://img.shields.io/badge/Shell-Bash-green.svg)](https://www.gnu.org/software/bash/)
-[![Version](https://img.shields.io/badge/version-1.3.0-orange.svg)](https://github.com/awtawsif/konapaper)
+[![Version](https://img.shields.io/badge/version-1.3.0-orange.svg)](https://github.com/awtawsif/boorupaper)
 
 A wallpaper rotator for Wayland and X11 that fetches high-quality images from [Konachan.net](https://konachan.net) and applies them automatically.
 
@@ -19,15 +19,15 @@ A wallpaper rotator for Wayland and X11 that fetches high-quality images from [K
 ## Quick Start
 
 ```bash
-git clone https://github.com/awtawsif/konapaper.git
-cd konapaper
-chmod +x konapaper.sh
-./konapaper.sh --init-interactive   # guided setup wizard
-./konapaper.sh                      # set a random wallpaper
+git clone https://github.com/awtawsif/boorupaper.git
+cd boorupaper
+chmod +x boorupaper.sh
+./boorupaper.sh --init-interactive   # guided setup wizard
+./boorupaper.sh                      # set a random wallpaper
 ```
 
 The interactive wizard auto-detects your display server, available wallpaper
-tools, and writes a personalised config to `~/.config/konapaper/konapaper.conf`.
+tools, and writes a personalised config to `~/.config/boorupaper/boorupaper.conf`.
 
 ## Requirements
 
@@ -48,34 +48,34 @@ tools, and writes a personalised config to `~/.config/konapaper/konapaper.conf`.
 
 ```bash
 # Filter by tags, rating, and score
-./konapaper.sh --tags "landscape scenic" --rating s --min-score 20
+./boorupaper.sh --tags "landscape scenic" --rating s --min-score 20
 
 # Animated wallpapers
-./konapaper.sh --format gif
-./konapaper.sh --animated-only
+./boorupaper.sh --format gif
+./boorupaper.sh --animated-only
 
 # Preview without downloading
-./konapaper.sh --dry-run --tags "touhou" --limit 10
+./boorupaper.sh --dry-run --tags "touhou" --limit 10
 
 # Favorites
-./konapaper.sh --fav              # save current wallpaper
-./konapaper.sh --list-favs        # list saved favorites
-./konapaper.sh --from-favs        # random wallpaper from favorites
+./boorupaper.sh --fav              # save current wallpaper
+./boorupaper.sh --list-favs        # list saved favorites
+./boorupaper.sh --from-favs        # random wallpaper from favorites
 
 # Discover content
-./konapaper.sh --discover-tags    # popular tags
-./konapaper.sh --discover-artists # popular artists
-./konapaper.sh --list-pools       # available pools
+./boorupaper.sh --discover-tags    # popular tags
+./boorupaper.sh --discover-artists # popular artists
+./boorupaper.sh --list-pools       # available pools
 
 # Maintenance
-./konapaper.sh --clean-cache      # clear preload cache
-./konapaper.sh --help             # full option list
-./konapaper.sh --version          # show version
+./boorupaper.sh --clean-cache      # clear preload cache
+./boorupaper.sh --help             # full option list
+./boorupaper.sh --version          # show version
 ```
 
 ### Full CLI Reference
 
-Run `./konapaper.sh --help` for the complete option list, or see the table below:
+Run `./boorupaper.sh --help` for the complete option list, or see the table below:
 
 <details>
 <summary>Click to expand</summary>
@@ -121,31 +121,31 @@ Run `./konapaper.sh --help` for the complete option list, or see the table below
 
 ```bash
 # Resolution filtering
-./konapaper.sh --min-width 1920 --min-height 1080 --aspect-ratio 16:9
+./boorupaper.sh --min-width 1920 --min-height 1080 --aspect-ratio 16:9
 
 # High-quality originals
-./konapaper.sh --tags "original" --rating s --min-score 50 --min-file-size "500KB"
+./boorupaper.sh --tags "original" --rating s --min-score 50 --min-file-size "500KB"
 
 # From a curated pool
-./konapaper.sh --pool 5678
+./boorupaper.sh --pool 5678
 
 # Random tag combinations
 # (configure RANDOM_TAGS_LIST in config, then:)
-./konapaper.sh --random-tags 3
+./boorupaper.sh --random-tags 3
 ```
 
 ### Scheduled Rotation
 
 ```bash
 # Cron — every hour
-0 * * * * /path/to/konapaper.sh --tags "landscape scenic" --rating s
+0 * * * * /path/to/boorupaper.sh --tags "landscape scenic" --rating s
 ```
 
 ## Configuration
 
-Configuration lives in `~/.config/konapaper/konapaper.conf` (created by `--init-interactive`).
+Configuration lives in `~/.config/boorupaper/boorupaper.conf` (created by `--init-interactive`).
 All defaults are built into the script — the config file is only needed for overrides.
-For a full reference, see `man/konapaper.conf.5` (or `man -l man/konapaper.conf.5`).
+For a full reference, see `man/boorupaper.conf.5` (or `man -l man/boorupaper.conf.5`).
 
 ```bash
 # Minimal custom config example
@@ -168,11 +168,11 @@ MIN_SCORE="15"
 | Logging | `ENABLE_LOGGING`, `LOG_LEVEL`, `LOG_ROTATION` |
 | Custom command | `WALLPAPER_COMMAND` (use `{IMAGE}` as placeholder) |
 
-For the full list with defaults and descriptions, see [`konapaper.conf`](konapaper.conf).
+For the full list with defaults and descriptions, see [`boorupaper.conf`](boorupaper.conf).
 
 ### Other Moebooru Instances
 
-You can point Konapaper at a different Moebooru-based site by setting `BASE_URL` in your config:
+You can point Boorupaper at a different Moebooru-based site by setting `BASE_URL` in your config:
 
 ```bash
 BASE_URL="https://yoursite.example.com"
@@ -181,8 +181,8 @@ BASE_URL="https://yoursite.example.com"
 ## Project Structure
 
 ```
-konapaper/
-├── konapaper.sh              # Entry point
+boorupaper/
+├── boorupaper.sh              # Entry point
 ├── lib/
 │   ├── constants.sh          # Globals, defaults, colors, tool commands
 │   ├── config.sh             # Config loading
@@ -198,7 +198,7 @@ konapaper/
 │   ├── cli.sh                # Argument parsing & help
 │   └── notifications.sh      # notify-send wrappers
 ├── man/
-│   └── konapaper.conf.5      # Man page for config options
+│   └── boorupaper.conf.5      # Man page for config options
 ├── tests/                    # Bats test suite
 └── api_doc.md                # Moebooru API reference
 ```
@@ -207,16 +207,16 @@ konapaper/
 
 ```bash
 # Lint
-shellcheck konapaper.sh lib/*.sh
+shellcheck boorupaper.sh lib/*.sh
 
 # Syntax check
-bash -n konapaper.sh && for f in lib/*.sh; do bash -n "$f"; done
+bash -n boorupaper.sh && for f in lib/*.sh; do bash -n "$f"; done
 
 # Run tests (requires bats-core)
 ./run_tests.sh
 
 # Dry-run test
-./konapaper.sh --dry-run --tags "test" --limit 1
+./boorupaper.sh --dry-run --tags "test" --limit 1
 ```
 
 ### Code Style

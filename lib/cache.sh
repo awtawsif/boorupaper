@@ -1,6 +1,6 @@
 #!/bin/bash
 # =================================================================
-# KONAPAPER — Cache Management
+# BOORUPAPER — Cache Management
 # Preloading, wallpaper selection, cache cleanup, and path helpers
 # =================================================================
 

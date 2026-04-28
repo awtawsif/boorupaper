@@ -1,6 +1,6 @@
 #!/bin/bash
 # =================================================================
-# KONAPAPER — Discovery Functions
+# BOORUPAPER — Discovery Functions
 # Tag discovery, artist discovery, and pool listing
 # =================================================================
 

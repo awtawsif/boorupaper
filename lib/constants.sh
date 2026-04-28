@@ -1,6 +1,6 @@
 #!/bin/bash
 # =================================================================
-# KONAPAPER — Constants & Default Variables
+# BOORUPAPER — Constants & Default Variables
 # Global variables, default values, and ANSI color definitions
 # =================================================================
 
@@ -45,15 +45,15 @@ FROM_FAVS=false
 
 # --- Logging Variables ---
 ENABLE_LOGGING=false
-LOG_FILE="$HOME/.config/konapaper/konapaper.log"
+LOG_FILE="$HOME/.config/boorupaper/boorupaper.log"
 LOG_LEVEL="detailed"
 LOG_ROTATION=true
 
 # --- Download Tracking ---
-DOWNLOADED_IDS_FILE="$HOME/.config/konapaper/downloaded_ids"
+DOWNLOADED_IDS_FILE="$HOME/.config/boorupaper/downloaded_ids"
 
 # --- Discovery ---
-EXPORTED_TAGS_FILE="$HOME/.config/konapaper/discovered_tags.txt"
+EXPORTED_TAGS_FILE="$HOME/.config/boorupaper/discovered_tags.txt"
 
 # --- Notification Variables ---
 ENABLE_NOTIFICATIONS=false

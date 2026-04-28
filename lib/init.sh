@@ -1,6 +1,6 @@
 #!/bin/bash
 # =================================================================
-# KONAPAPER — Init Mode
+# BOORUPAPER — Init Mode
 # Interactive and non-interactive initialization wizard
 # =================================================================
 
@@ -121,17 +121,17 @@ prompt_array() {
 
 # --- Main Init Mode Logic ---
 run_init_interactive() {
-    config_dest="$HOME/.config/konapaper/konapaper.conf"
+    config_dest="$HOME/.config/boorupaper/boorupaper.conf"
     detection=$(detect_display_server)
     display_server="${detection%:*}"
     wallpaper_tool="${detection#*:}"
 
     echo ""
     echo "${C_BOLD_CYAN}╔══════════════════════════════════════════════════╗${C_RESET}"
-    echo "${C_BOLD_CYAN}║${C_RESET}        ${C_BOLD_MAGENTA}✦  Konapaper Initialization  ✦${C_RESET}        ${C_BOLD_CYAN}║${C_RESET}"
+    echo "${C_BOLD_CYAN}║${C_RESET}        ${C_BOLD_MAGENTA}✦  Boorupaper Initialization  ✦${C_RESET}        ${C_BOLD_CYAN}║${C_RESET}"
     echo "${C_BOLD_CYAN}╚══════════════════════════════════════════════════╝${C_RESET}"
 
-    mkdir -p "$HOME/.config/konapaper"
+    mkdir -p "$HOME/.config/boorupaper"
 
     echo ""
     echo "  ${C_DIM}You'll be prompted for each setting.${C_RESET}"
@@ -225,10 +225,10 @@ run_init_interactive() {
 
             echo ""
             echo "  ${C_BOLD_WHITE}Discovering tags...${C_RESET}"
-            EXPORTED_TAGS_FILE="$HOME/.config/konapaper/discovered_tags.txt"
+            EXPORTED_TAGS_FILE="$HOME/.config/boorupaper/discovered_tags.txt"
             discover_tags "" count "$discover_count"
 
-            random_tags_list="\"$HOME/.config/konapaper/discovered_tags.txt\""
+            random_tags_list="\"$HOME/.config/boorupaper/discovered_tags.txt\""
 
             input=$(prompt_with_default "Random Tags Count" "3" "5")
             random_tags_count="$input"
@@ -282,7 +282,7 @@ run_init_interactive() {
     enable_logging="$input"
 
     if [[ "$enable_logging" == "true" ]]; then
-        input=$(prompt_with_default "Log File" "$HOME/.config/konapaper/konapaper.log" "/path/to/log")
+        input=$(prompt_with_default "Log File" "$HOME/.config/boorupaper/boorupaper.log" "/path/to/log")
         log_file="$input"
 
         input=$(prompt_with_default "Log Level" "detailed" "basic / detailed / verbose")
@@ -291,14 +291,14 @@ run_init_interactive() {
         input=$(prompt_yes_no "Log Rotation (rotate when >10MB)" "true")
         log_rotation="$input"
     else
-        log_file="$HOME/.config/konapaper/konapaper.log"
+        log_file="$HOME/.config/boorupaper/boorupaper.log"
         log_level="detailed"
         log_rotation="true"
     fi
 
     print_section_header "💾  Writing Configuration"
     {
-        echo "# Konapaper Configuration - Generated $(date)"
+        echo "# Boorupaper Configuration - Generated $(date)"
         echo ""
         echo "# --- Display Server ---"
         echo "DISPLAY_SERVER=\"$display_server\""
@@ -358,9 +358,9 @@ run_init_interactive() {
     echo "  ${C_BOLD_GREEN}✓${C_RESET} Config written to ${C_CYAN}${config_dest}${C_RESET}"
     echo ""
     echo "${C_BOLD_GREEN}  ✓ Configuration complete!${C_RESET}"
-    echo "  ${C_DIM}Cache directory:${C_RESET} ${C_CYAN}$HOME/.cache/konapaper${C_RESET}"
+    echo "  ${C_DIM}Cache directory:${C_RESET} ${C_CYAN}$HOME/.cache/boorupaper${C_RESET}"
     echo ""
-    echo "  ${C_BOLD_WHITE}You can now run konapaper normally.${C_RESET}"
+    echo "  ${C_BOLD_WHITE}You can now run boorupaper normally.${C_RESET}"
     echo ""
     exit 0
 }

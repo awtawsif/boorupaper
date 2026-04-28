@@ -1,6 +1,6 @@
 #!/bin/bash
 # =================================================================
-# KONAPAPER — Logging Functions
+# BOORUPAPER — Logging Functions
 # Log initialization, rotation, and all log_* helper functions
 # =================================================================
 
@@ -36,7 +36,7 @@ log_init() {
     timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     {
         echo ""
-        echo "=== KONAPAPER EXECUTION SESSION ==="
+        echo "=== BOORUPAPER EXECUTION SESSION ==="
         echo "Timestamp: $timestamp"
         echo "Script: $0"
         echo "Working Directory: $(pwd)"

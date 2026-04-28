@@ -1,6 +1,6 @@
 #!/bin/bash
 # =================================================================
-# KONAPAPER — Helper Functions
+# BOORUPAPER — Helper Functions
 # Size converters, aspect ratio parser, page argument parser
 # =================================================================
 
