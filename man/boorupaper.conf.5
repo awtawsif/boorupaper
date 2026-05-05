@@ -88,7 +88,10 @@ Vertical resolution constraints in pixels.
 Default: \fI""\fR (disabled)
 .TP
 .B ASPECT_RATIO
-Filter by visual proportions. Supported: \fB16:9\fR, \fB21:9\fR, \fB4:3\fR, \fB16:10\fR, \fB3:2\fR, \fB5:4\fR, \fB32:9\fR, or any custom \fBN:M\fR ratio.
+Filter by visual proportions. Supports single values or comma-separated lists.
+Supported: \fB16:9\fR, \fB21:9\fR, \fB4:3\fR, \fB16:10\fR, \fB3:2\fR, \fB5:4\fR, \fB32:9\fR, or any custom \fBN:M\fR ratio.
+.br
+Example: \fBASPECT_RATIO="16:9,21:9"\fR
 .br
 Default: \fI""\fR (disabled)
 .SH ANIMATED CONTENT
@@ -119,6 +122,11 @@ The number of tags to pick from RANDOM_TAGS_LIST. Set to \fB0\fR to disable.
 .br
 Default: \fB0\fR
 .SH CACHE AND PRELOADING
+.TP
+.B FORCE_SET
+When \fBtrue\fR, bypasses the preload cache and immediately downloads/applies a new wallpaper.
+.br
+Default: \fB"false"\fR
 .TP
 .B PRELOAD_COUNT
 Number of wallpapers to download in the background for the next rotation.

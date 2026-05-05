@@ -11,6 +11,7 @@ A wallpaper rotator for Wayland and X11 that fetches high-quality images from [K
 - **Smart filtering** — tags, rating, score, resolution, aspect ratio, file size
 - **Auto-detection** — finds your display server and available wallpaper tools
 - **Background preloading** — instant wallpaper transitions with a per-rating cache
+- **Force-set mode** — skip cache and immediately download/apply a new wallpaper
 - **Animated wallpapers** — GIF and WebM support with proper frame handling
 - **Favorites system** — save and rotate from a personal collection
 - **Dry-run mode** — preview results before downloading
@@ -121,7 +122,10 @@ Run `./boorupaper.sh --help` for the complete option list, or see the table belo
 
 ```bash
 # Resolution filtering
-./boorupaper.sh --min-width 1920 --min-height 1080 --aspect-ratio 16:9
+./boorupaper.sh --min-width 1920 --min-height 1080 --aspect-ratio "16:9,21:9"
+
+# Force immediate download/set (skip cache)
+./boorupaper.sh --force-set
 
 # High-quality originals
 ./boorupaper.sh --tags "original" --rating s --min-score 50 --min-file-size "500KB"

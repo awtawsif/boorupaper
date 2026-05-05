@@ -59,31 +59,43 @@ setup_file() {
 @test "parse_aspect_ratio: 16:9" {
     run parse_aspect_ratio "16:9"
     [ "$status" -eq 0 ]
-    [ "$output" = "1.78" ]
+    [ "$output" = "[1.78]" ]
 }
 
 @test "parse_aspect_ratio: 21:9" {
     run parse_aspect_ratio "21:9"
     [ "$status" -eq 0 ]
-    [ "$output" = "2.37" ]
+    [ "$output" = "[2.37]" ]
 }
 
 @test "parse_aspect_ratio: 4:3" {
     run parse_aspect_ratio "4:3"
     [ "$status" -eq 0 ]
-    [ "$output" = "1.33" ]
+    [ "$output" = "[1.33]" ]
 }
 
 @test "parse_aspect_ratio: 1:1" {
     run parse_aspect_ratio "1:1"
     [ "$status" -eq 0 ]
-    [ "$output" = "1.00" ]
+    [ "$output" = "[1.00]" ]
 }
 
 @test "parse_aspect_ratio: custom ratio 3:2" {
     run parse_aspect_ratio "3:2"
     [ "$status" -eq 0 ]
-    [ "$output" = "1.50" ]
+    [ "$output" = "[1.50]" ]
+}
+
+@test "parse_aspect_ratio: multiple ratios 16:9,4:3" {
+    run parse_aspect_ratio "16:9,4:3"
+    [ "$status" -eq 0 ]
+    [ "$output" = "[1.78, 1.33]" ]
+}
+
+@test "parse_aspect_ratio: multiple ratios with custom 21:9,1:1,3:2" {
+    run parse_aspect_ratio "21:9,1:1,3:2"
+    [ "$status" -eq 0 ]
+    [ "$output" = "[2.37, 1.00, 1.50]" ]
 }
 
 @test "parse_aspect_ratio: invalid format exits" {
@@ -146,7 +158,8 @@ setup_file() {
     [[ "$output" == *".file_size"* ]]
     [[ "$output" == *".width"* ]]
     [[ "$output" == *".height"* ]]
-    [[ "$output" == *".[] | "\(.id)|\(.file_url)"'* ]]
+    [[ "$output" == *"any($aspect_ratio[]"* ]]
+    [[ "$output" == *'.[] | "\(.id)|\(.file_url)"'* ]]
 }
 
 # =============================================================================

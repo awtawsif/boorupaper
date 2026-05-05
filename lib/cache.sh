@@ -26,7 +26,9 @@ run_cache_cleanup() {
         fi
     fi
     find "$CACHE_DIR" -maxdepth 1 -type d -name "preload_*" -exec rm -rf {} +
-    echo "✅ Preload cache cleaned. Current wallpaper preserved."
+    # Also clean up any orphan .url files or extensionless temp files in the main cache dir
+    find "$CACHE_DIR" -maxdepth 1 -type f \( -name "*.url" -o -name "preload_job_*" -o -name "current.tmp.*" \) -delete
+    echo "✅ Cache cleaned. Current wallpaper preserved."
     log_success "Cache cleanup completed"
     return 0
 }
@@ -72,6 +74,8 @@ select_next_wallpaper() {
         local ext
         ext=$(get_extension_from_url "$next")
         local current_wallpaper="$CACHE_DIR/current.$ext"
+        # Remove old current wallpapers to avoid multiple extensions
+        rm -f "$CACHE_DIR"/current.*
         mv "$next" "$current_wallpaper"
         echo "$current_wallpaper"
     else

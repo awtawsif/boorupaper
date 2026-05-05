@@ -226,6 +226,7 @@ run_init_interactive() {
             echo ""
             echo "  ${C_BOLD_WHITE}Discovering tags...${C_RESET}"
             EXPORTED_TAGS_FILE="$HOME/.config/boorupaper/discovered_tags.txt"
+            EXPORT_TAGS=true
             discover_tags "" count "$discover_count"
 
             random_tags_list="\"$HOME/.config/boorupaper/discovered_tags.txt\""

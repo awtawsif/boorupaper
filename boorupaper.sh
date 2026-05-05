@@ -119,9 +119,9 @@ else
 fi
 
 # Convert aspect ratio if specified
-ASPECT_RATIO_FLOAT="0"
+ASPECT_RATIO_JSON="[]"
 if [[ -n "$ASPECT_RATIO" ]]; then
-    if ! ASPECT_RATIO_FLOAT=$(parse_aspect_ratio "$ASPECT_RATIO"); then
+    if ! ASPECT_RATIO_JSON=$(parse_aspect_ratio "$ASPECT_RATIO"); then
         exit 1
     fi
 fi
@@ -206,7 +206,11 @@ fi
 log_write "INFO" "Starting wallpaper selection process"
 notify_progress_start "Querying API" "Tags: ${TAGS:-none} | Rating: $RATING | Order: $ORDER"
 
-next_wall=$(select_next_wallpaper)
+next_wall=""
+if [[ "$FORCE_SET" == "false" ]]; then
+    next_wall=$(select_next_wallpaper)
+fi
+
 if [ -n "$next_wall" ]; then
     log_write "INFO" "Using cached wallpaper: $next_wall"
     notify_progress_update "Setting wallpaper" "$(basename "$next_wall")"
@@ -219,13 +223,22 @@ else
 
     temp_wallpaper=$(mktemp "$CACHE_DIR/current.tmp.XXXXXX")
     if download_wallpaper "$temp_wallpaper"; then
-        ext=$(get_extension_from_url "$(cat "${temp_wallpaper}.url" 2>/dev/null)")
-        final_wallpaper="$CACHE_DIR/current.$ext"
-        [[ -f "${temp_wallpaper}.${ext}" ]] && mv "${temp_wallpaper}.${ext}" "$final_wallpaper"
-        rm -f "${temp_wallpaper}.url"
-        notify_progress_update "Setting wallpaper" "$(basename "$final_wallpaper")"
-        set_wallpaper "$final_wallpaper"
-        notify_complete "Wallpaper applied: $(basename "$final_wallpaper")"
+        # Find the downloaded file (it will have an extension like .jpg)
+        downloaded_file=$(find "$CACHE_DIR" -maxdepth 1 -name "$(basename "$temp_wallpaper").*" | head -n1)
+        if [[ -n "$downloaded_file" ]]; then
+            ext="${downloaded_file##*.}"
+            final_wallpaper="$CACHE_DIR/current.$ext"
+            # Remove old current wallpapers to avoid multiple extensions
+            rm -f "$CACHE_DIR"/current.*
+            mv "$downloaded_file" "$final_wallpaper"
+            notify_progress_update "Setting wallpaper" "$(basename "$final_wallpaper")"
+            set_wallpaper "$final_wallpaper"
+            notify_complete "Wallpaper applied: $(basename "$final_wallpaper")"
+        else
+            log_error "Downloaded file not found for $temp_wallpaper"
+            echo "Error: downloaded file not found." >&2
+            exit 1
+        fi
     else
         log_error "Failed to download wallpaper"
         echo "Error: failed to fetch wallpaper." >&2

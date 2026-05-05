@@ -33,24 +33,38 @@ human_readable_size() {
 }
 
 parse_aspect_ratio() {
-    local ratio="$1"
-    case "$ratio" in
-        "16:9") echo "1.78" ;;
-        "21:9") echo "2.37" ;;
-        "4:3") echo "1.33" ;;
-        "1:1") echo "1.00" ;;
-        "3:2") echo "1.50" ;;
-        "5:4") echo "1.25" ;;
-        "32:9") echo "3.56" ;;
-        *)
-            if [[ "$ratio" =~ ^([0-9]+):([0-9]+)$ ]]; then
-                awk "BEGIN {printf \"%.2f\", ${BASH_REMATCH[1]}/${BASH_REMATCH[2]}}"
-            else
-                echo "Error: invalid aspect ratio '$ratio' (use format like '16:9')" >&2
-                exit 1
-            fi
-            ;;
-    esac
+    local input="$1"
+    local ratios=()
+    IFS=',' read -r -a input_ratios <<< "$input"
+
+    for ratio in "${input_ratios[@]}"; do
+        case "$ratio" in
+            "16:9") ratios+=("1.78") ;;
+            "21:9") ratios+=("2.37") ;;
+            "4:3") ratios+=("1.33") ;;
+            "1:1") ratios+=("1.00") ;;
+            "3:2") ratios+=("1.50") ;;
+            "5:4") ratios+=("1.25") ;;
+            "32:9") ratios+=("3.56") ;;
+            *)
+                if [[ "$ratio" =~ ^([0-9]+):([0-9]+)$ ]]; then
+                    ratios+=("$(awk "BEGIN {printf \"%.2f\", ${BASH_REMATCH[1]}/${BASH_REMATCH[2]}}")")
+                else
+                    echo "Error: invalid aspect ratio '$ratio' (use format like '16:9' or '16:9,4:3')" >&2
+                    exit 1
+                fi
+                ;;
+        esac
+    done
+
+    # Output as JSON array
+    local json="["
+    for i in "${!ratios[@]}"; do
+        json+="${ratios[$i]}"
+        [[ $i -lt $((${#ratios[@]} - 1)) ]] && json+=", "
+    done
+    json+="]"
+    echo "$json"
 }
 
 parse_page_argument() {
@@ -90,7 +104,7 @@ parse_page_argument() {
 # Build the jq filter for selecting posts with optional dimension/size filtering.
 # Returns a jq filter string that selects posts matching the given constraints.
 # Globals used: MAX_FILE_SIZE_BYTES, MIN_FILE_SIZE_BYTES, MIN_WIDTH_NUM,
-#   MAX_WIDTH_NUM, MIN_HEIGHT_NUM, MAX_HEIGHT_NUM, ASPECT_RATIO_FLOAT.
+#   MAX_WIDTH_NUM, MIN_HEIGHT_NUM, MAX_HEIGHT_NUM, ASPECT_RATIO_JSON.
 build_jq_filter() {
     local use_filters="$1"  # "true" if dimension/size filters are active
 
@@ -108,7 +122,7 @@ if type == "array" then . else .posts? // . end |
   (.width >= $min_width or $min_width == 0) and
   (.height <= $max_height or $max_height == 0) and
   (.height >= $min_height or $min_height == 0) and
-  ($aspect_ratio == 0 or (.width / .height >= ($aspect_ratio - 0.02) and .width / .height <= ($aspect_ratio + 0.02)))
+  (if ($aspect_ratio | length == 0) then true else . as $p | any($aspect_ratio[]; . as $r | ($p.width / $p.height >= ($r - 0.02) and $p.width / $p.height <= ($r + 0.02))) end)
  )) |
  .[] | "\(.id)|\(.file_url)"
 JQFILTER
@@ -135,7 +149,7 @@ if type == "array" then . else .posts? // . end |
     (.width >= $min_width or $min_width == 0) and
     (.height <= $max_height or $max_height == 0) and
     (.height >= $min_height or $min_height == 0) and
-    ($aspect_ratio == 0 or (.width / .height >= ($aspect_ratio - 0.02) and .width / .height <= ($aspect_ratio + 0.02)))
+    (if ($aspect_ratio | length == 0) then true else . as $p | any($aspect_ratio[]; . as $r | ($p.width / $p.height >= ($r - 0.02) and $p.width / $p.height <= ($r + 0.02))) end)
  )) |
  map([.id, (.score // 0), (.author // "unknown"), .width, .height, (.file_size|tostring), (.tags | .[0:50])]) |
  .[] | @tsv

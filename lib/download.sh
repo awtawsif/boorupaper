@@ -14,7 +14,7 @@ get_downloaded_ids() {
 # Filter posts from JSON and select a random candidate not already downloaded.
 # Writes SELECTED_ID and IMAGE_URL to stdout as "ID|URL", or nothing if no match.
 # Uses global variables: MAX_FILE_SIZE_BYTES, MIN_FILE_SIZE_BYTES, MIN_WIDTH_NUM,
-#   MAX_WIDTH_NUM, MIN_HEIGHT_NUM, MAX_HEIGHT_NUM, ASPECT_RATIO_FLOAT
+#   MAX_WIDTH_NUM, MIN_HEIGHT_NUM, MAX_HEIGHT_NUM, ASPECT_RATIO_JSON
 filter_and_select_post() {
     local json="$1"
     local downloaded_ids="$2"
@@ -31,7 +31,7 @@ filter_and_select_post() {
         --argjson min_width "$MIN_WIDTH_NUM" \
         --argjson max_height "$MAX_HEIGHT_NUM" \
         --argjson min_height "$MIN_HEIGHT_NUM" \
-        --argjson aspect_ratio "$ASPECT_RATIO_FLOAT" \
+        --argjson aspect_ratio "$ASPECT_RATIO_JSON" \
         "$jq_filter" "$json")
 
     if [[ -z "$all_candidates" ]]; then
@@ -109,7 +109,7 @@ download_wallpaper() {
     # Determine if dimension/size filters are active (needed for both dry-run and normal mode)
     local use_filters="false"
     if (( MAX_FILE_SIZE_BYTES != 0 || MIN_FILE_SIZE_BYTES != 0 )) || \
-       [[ -n "$MIN_WIDTH" || -n "$MAX_WIDTH" || -n "$MIN_HEIGHT" || -n "$MAX_HEIGHT" || "$ASPECT_RATIO_FLOAT" != "0" ]]; then
+       [[ -n "$MIN_WIDTH" || -n "$MAX_WIDTH" || -n "$MIN_HEIGHT" || -n "$MAX_HEIGHT" || "$ASPECT_RATIO_JSON" != "[]" ]]; then
         use_filters="true"
     fi
 
@@ -123,7 +123,7 @@ download_wallpaper() {
             jq -r --argjson max_size "$MAX_FILE_SIZE_BYTES" --argjson min_size "$MIN_FILE_SIZE_BYTES" \
                 --argjson max_width "$MAX_WIDTH_NUM" --argjson min_width "$MIN_WIDTH_NUM" \
                 --argjson max_height "$MAX_HEIGHT_NUM" --argjson min_height "$MIN_HEIGHT_NUM" \
-                --argjson aspect_ratio "$ASPECT_RATIO_FLOAT" \
+                --argjson aspect_ratio "$ASPECT_RATIO_JSON" \
                 "$dry_run_filter" "$json"
         else
             jq -r "$dry_run_filter" "$json"
@@ -174,6 +174,9 @@ local IMAGE_URL
     # Store the actual URL in a per-job temp file to avoid race conditions
     # during concurrent preload operations (outfile base is unique per job)
     echo "$IMAGE_URL" > "${outfile}.url"
+
+    # Ensure cleanup of metadata and base temp files on exit
+    trap 'rm -f "${outfile}.url" "$outfile" 2>/dev/null' RETURN
 
     local tmpfile="${outfile_with_ext}.tmp"
     if ! curl -sfL "$IMAGE_URL" -o "$tmpfile"; then

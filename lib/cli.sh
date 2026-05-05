@@ -35,10 +35,11 @@ display_help() {
     echo "    ${C_BOLD_WHITE}--min-width${C_RESET} ${C_CYAN}<px>${C_RESET}       Minimum width in pixels"
     echo "    ${C_BOLD_WHITE}--max-width${C_RESET} ${C_CYAN}<px>${C_RESET}       Maximum width in pixels"
     echo "    ${C_BOLD_WHITE}--min-height${C_RESET} ${C_CYAN}<px>${C_RESET}      Minimum height in pixels"
-    echo "    ${C_BOLD_WHITE}--max-height${C_RESET} ${C_CYAN}<px>${C_RESET}      Maximum height in pixels"
-    echo "    ${C_BOLD_WHITE}--aspect-ratio${C_RESET} ${C_CYAN}<r>${C_RESET}   Aspect ratio (e.g. 16:9, 21:9, 4:3)"
+    echo "    ${C_BOLD_WHITE}--max-height${C_RESET} ${C_CYAN}<px>${C_RESET}      Minimum height in pixels"
+    echo "    ${C_BOLD_WHITE}--aspect-ratio${C_RESET} ${C_CYAN}<r>${C_RESET}   Aspect ratio(s) (e.g. 16:9 or 16:9,4:3)"
     echo "    ${C_BOLD_WHITE}-f, --format${C_RESET} ${C_CYAN}<fmt>${C_RESET}     Preferred: jpg, gif, webm"
     echo "    ${C_BOLD_WHITE}--animated-only${C_RESET}       Search animated content only"
+    echo "    ${C_BOLD_WHITE}--force-set${C_RESET}           Skip cache and force download/set"
     echo ""
 
     echo "  ${C_BOLD_MAGENTA}⭐  Favorites & Pools${C_RESET}"
@@ -143,6 +144,7 @@ parse_cli_args() {
                 fi
                 PREFERRED_FORMAT="$2"; shift ;;
             --animated-only) ANIMATED_ONLY=true ;;
+            --force-set) FORCE_SET=true ;;
             -d|--dry-run) DRY_RUN=true ;;
             -D|--discover-tags) DISCOVER_TAGS=true ;;
             -A|--discover-artists) DISCOVER_ARTISTS=true ;;
