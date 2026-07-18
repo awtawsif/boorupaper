@@ -90,6 +90,12 @@ download_wallpaper() {
         API_URL="${BASE_URL}${POST_ENDPOINT}?limit=${LIMIT}&page=${PAGE}&tags=${encoded_effective_tags}+rating:${RATING}+order:${ORDER}"
         [[ -n "$MIN_SCORE" ]] && API_URL="${API_URL}+score:>=${MIN_SCORE}"
         [[ -n "$ARTIST" ]] && API_URL="${API_URL}+user:${ARTIST}"
+
+        if [[ "$RATING" != "s" && "$BASE_URL" == *"konachan.net"* ]]; then
+            echo "Warning: konachan.net is SFW-only and does not serve rating='$RATING' content." >&2
+            echo "Set BASE_URL in your config to a Moebooru instance that supports all ratings." >&2
+            log_warning "konachan.net does not support rating='$RATING'; set BASE_URL in config for full ratings"
+        fi
     fi
 
     echo "-> Querying API: $API_URL"
