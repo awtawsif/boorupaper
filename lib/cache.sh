@@ -34,6 +34,10 @@ run_cache_cleanup() {
 }
 
 preload_wallpapers() {
+    # Clean orphaned artifacts from killed downloads (extensionless temp files and .url metadata)
+    find "$PRELOAD_DIR" -maxdepth 1 -type f ! -name "*.*" -delete 2>/dev/null
+    find "$PRELOAD_DIR" -maxdepth 1 -type f -name "*.url" -delete 2>/dev/null
+
     local existing
     existing=$(find "$PRELOAD_DIR" -type f \( -name "*.jpg" -o -name "*.gif" -o -name "*.webm" -o -name "*.png" \) | wc -l)
     local available_slots=$(( MAX_PRELOAD_CACHE - existing ))
