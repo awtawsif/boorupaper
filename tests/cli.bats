@@ -2,7 +2,7 @@
 
 load test_helper
 
-setup_file() {
+setup() {
     source_lib "constants"
     source_lib "helpers"
     source_lib "cli"

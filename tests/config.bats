@@ -2,8 +2,9 @@
 
 load test_helper
 
-setup_file() {
+setup() {
     source_lib "constants"
+    source_lib "config"
     # Reset globals that may have been modified
     TAGS=""
     RANDOM_TAGS_COUNT=0

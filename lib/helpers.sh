@@ -104,12 +104,68 @@ parse_page_argument() {
 # Build the jq filter for selecting posts with optional dimension/size filtering.
 # Returns a jq filter string that selects posts matching the given constraints.
 # Globals used: MAX_FILE_SIZE_BYTES, MIN_FILE_SIZE_BYTES, MIN_WIDTH_NUM,
-#   MAX_WIDTH_NUM, MIN_HEIGHT_NUM, MAX_HEIGHT_NUM, ASPECT_RATIO_JSON.
+#   MAX_WIDTH_NUM, MIN_HEIGHT_NUM, MAX_HEIGHT_NUM, ASPECT_RATIO_JSON, SERVER_TYPE,
+#   RATING, MIN_SCORE, ORDER.
 build_jq_filter() {
     local use_filters="$1"  # "true" if dimension/size filters are active
+    local server
+    server=$(detect_server_type)
 
-    if [[ "$use_filters" == "true" ]]; then
-        cat <<'JQFILTER'
+    if [[ "$server" == "danbooru" ]]; then
+        # Danbooru client-side filters: only applied when metatags didn't fit
+        local rating_code=""
+        local score_code=""
+        local sort_code=""
+
+        if [[ "${DANBOORU_CLIENT_RATING}" == "true" && -n "$RATING" ]]; then
+            rating_code="and (.rating == \"$RATING\")"
+        fi
+        if [[ "${DANBOORU_CLIENT_SCORE}" == "true" && -n "$MIN_SCORE" ]]; then
+            score_code="and ((.score // 0) >= $MIN_SCORE)"
+        fi
+        if [[ "${DANBOORU_CLIENT_ORDER}" == "true" ]]; then
+            case "$ORDER" in
+                score) sort_code=" | sort_by(.score // 0) | reverse" ;;
+                date)  sort_code=" | sort_by(.created_at // \"\") | reverse" ;;
+            esac
+        fi
+
+        if [[ "$use_filters" == "true" ]]; then
+            cat <<JQFILTER
+if type == "array" then . else .posts? // . end |
+ map(select(
+  type == "object" and
+  .file_size != null and
+  .image_width != null and
+  .image_height != null and
+  (.file_size <= \$max_size or \$max_size == 0) and
+  (.file_size >= \$min_size or \$min_size == 0) and
+  (.image_width <= \$max_width or \$max_width == 0) and
+  (.image_width >= \$min_width or \$min_width == 0) and
+  (.image_height <= \$max_height or \$max_height == 0) and
+  (.image_height >= \$min_height or \$min_height == 0) and
+  (if (\$aspect_ratio | length == 0) then true else . as \$p | any(\$aspect_ratio[]; . as \$r | (\$p.image_width / \$p.image_height >= (\$r - 0.02) and \$p.image_width / \$p.image_height <= (\$r + 0.02))) end)
+  ${rating_code} ${score_code}
+ ))${sort_code} |
+ .[] | "\(.id)|\(.file_url)"
+JQFILTER
+        else
+            if [[ -n "$rating_code" || -n "$score_code" || -n "$sort_code" ]]; then
+                cat <<JQFILTER
+if type == "array" then . else .posts? // . end |
+ map(select(
+  type == "object"
+  ${rating_code} ${score_code}
+ ))${sort_code} |
+ .[] | "\(.id)|\(.file_url)"
+JQFILTER
+            else
+                echo 'if type == "array" then . else .posts? // . end | .[] | "\(.id)|\(.file_url)"'
+            fi
+        fi
+    else
+        if [[ "$use_filters" == "true" ]]; then
+            cat <<'JQFILTER'
 if type == "array" then . else .posts? // . end |
  map(select(
   type == "object" and
@@ -126,17 +182,74 @@ if type == "array" then . else .posts? // . end |
  )) |
  .[] | "\(.id)|\(.file_url)"
 JQFILTER
-    else
-        echo 'if type == "array" then . else .posts? // . end | .[] | "\(.id)|\(.file_url)"'
+        else
+            echo 'if type == "array" then . else .posts? // . end | .[] | "\(.id)|\(.file_url)"'
+        fi
     fi
 }
 
 # Build the jq filter for dry-run display output (tabular format).
 build_jq_dry_run_filter() {
     local use_filters="$1"
+    local server
+    server=$(detect_server_type)
 
-    if [[ "$use_filters" == "true" ]]; then
-        cat <<'JQFILTER'
+    if [[ "$server" == "danbooru" ]]; then
+        local rating_code=""
+        local score_code=""
+        local sort_code=""
+
+        if [[ "${DANBOORU_CLIENT_RATING}" == "true" && -n "$RATING" ]]; then
+            rating_code="and (.rating == \"$RATING\")"
+        fi
+        if [[ "${DANBOORU_CLIENT_SCORE}" == "true" && -n "$MIN_SCORE" ]]; then
+            score_code="and ((.score // 0) >= $MIN_SCORE)"
+        fi
+        if [[ "${DANBOORU_CLIENT_ORDER}" == "true" ]]; then
+            case "$ORDER" in
+                score) sort_code=" | sort_by(.score // 0) | reverse" ;;
+                date)  sort_code=" | sort_by(.created_at // \"\") | reverse" ;;
+            esac
+        fi
+
+        if [[ "$use_filters" == "true" ]]; then
+            cat <<JQFILTER
+if type == "array" then . else .posts? // . end |
+ map(select(
+    type == "object" and
+    .file_size != null and
+    .image_width != null and
+    .image_height != null and
+    (.file_size <= \$max_size or \$max_size == 0) and
+    (.file_size >= \$min_size or \$min_size == 0) and
+    (.image_width <= \$max_width or \$max_width == 0) and
+    (.image_width >= \$min_width or \$min_width == 0) and
+    (.image_height <= \$max_height or \$max_height == 0) and
+    (.image_height >= \$min_height or \$min_height == 0) and
+    (if (\$aspect_ratio | length == 0) then true else . as \$p | any(\$aspect_ratio[]; . as \$r | (\$p.image_width / \$p.image_height >= (\$r - 0.02) and \$p.image_width / \$p.image_height <= (\$r + 0.02))) end)
+    ${rating_code} ${score_code}
+ ))${sort_code} |
+ map([.id, (.score // 0), (.uploader_id // "unknown"), .image_width, .image_height, (.file_size|tostring), (.tag_string | .[0:50])]) |
+ .[] | @tsv
+JQFILTER
+        else
+            if [[ -n "$rating_code" || -n "$score_code" || -n "$sort_code" ]]; then
+                cat <<JQFILTER
+if type == "array" then . else .posts? // . end |
+ map(select(
+    type == "object"
+    ${rating_code} ${score_code}
+ ))${sort_code} |
+ map([.id, (.score // 0), (.uploader_id // "unknown"), .image_width, .image_height, (.file_size|tostring), (.tag_string | .[0:50])]) |
+ .[] | @tsv
+JQFILTER
+            else
+                echo 'if type == "array" then . else .posts? // . end | map([.id, (.score // 0), (.uploader_id // "unknown"), .image_width, .image_height, (.file_size|tostring), (.tag_string | .[0:50])]) | .[] | @tsv'
+            fi
+        fi
+    else
+        if [[ "$use_filters" == "true" ]]; then
+            cat <<'JQFILTER'
 if type == "array" then . else .posts? // . end |
  map(select(
     type == "object" and
@@ -154,7 +267,8 @@ if type == "array" then . else .posts? // . end |
  map([.id, (.score // 0), (.author // "unknown"), .width, .height, (.file_size|tostring), (.tags | .[0:50])]) |
  .[] | @tsv
 JQFILTER
-    else
-        echo 'if type == "array" then . else .posts? // . end | map([.id, (.score // 0), (.author // "unknown"), .width, .height, (.file_size|tostring), (.tags | .[0:50])]) | .[] | @tsv'
+        else
+            echo 'if type == "array" then . else .posts? // . end | map([.id, (.score // 0), (.author // "unknown"), .width, .height, (.file_size|tostring), (.tags | .[0:50])]) | .[] | @tsv'
+        fi
     fi
 }

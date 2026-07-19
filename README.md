@@ -2,12 +2,13 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Shell](https://img.shields.io/badge/Shell-Bash-green.svg)](https://www.gnu.org/software/bash/)
-[![Version](https://img.shields.io/badge/version-1.3.0-orange.svg)](https://github.com/awtawsif/boorupaper)
+[![Version](https://img.shields.io/badge/version-1.4.0-orange.svg)](https://github.com/awtawsif/boorupaper)
 
-A wallpaper rotator for Wayland and X11 that fetches high-quality images from [Konachan.net](https://konachan.net) and applies them automatically.
+A wallpaper rotator for Wayland and X11 that fetches high-quality images from [Konachan.net](https://konachan.net) (Moebooru) and [Danbooru](https://danbooru.donmai.us), with automatic server detection.
 
 ## Features
 
+- **Multi-site support** — Konachan.net (Moebooru) and Danbooru, auto-detected from config
 - **Smart filtering** — tags, rating, score, resolution, aspect ratio, file size
 - **Auto-detection** — finds your display server and available wallpaper tools
 - **Background preloading** — instant wallpaper transitions with a per-rating cache
@@ -86,7 +87,7 @@ Run `./boorupaper.sh --help` for the complete option list, or see the table belo
 | `--tags` | `-t` | Space-separated tags | None |
 | `--limit` | `-l` | Posts to query | 50 |
 | `--page` | `-p` | Page, `random`, or `MIN-MAX` | 1 |
-| `--rating` | `-r` | `s` / `q` / `e` | `s` |
+| `--rating` | `-r` | `s` / `q` / `e` / `g` (Danbooru only) | `s` |
 | `--order` | `-o` | `random` / `score` / `date` | `random` |
 | `--max-file-size` | `-s` | e.g. `2MB`, `0` to disable | `2MB` |
 | `--min-file-size` | `-z` | e.g. `500KB` | disabled |
@@ -113,6 +114,7 @@ Run `./boorupaper.sh --help` for the complete option list, or see the table belo
 | `--clean-cache` | `-cc` | Clean preload cache | false |
 | `--clean-force` | `-cf` | Force clean (no prompt) | false |
 | `--init-interactive` | `-ii` | Interactive init wizard | false |
+| `--server` | | Server type: `moebooru` / `danbooru` (auto-detected) | auto |
 | `--version` | `-v` | Show version | |
 | `--help` | `-h` | Show help | |
 
@@ -136,6 +138,10 @@ Run `./boorupaper.sh --help` for the complete option list, or see the table belo
 # Random tag combinations
 # (configure RANDOM_TAGS_LIST in config, then:)
 ./boorupaper.sh --random-tags 3
+
+# Danbooru-specific
+./boorupaper.sh --server danbooru --tags "landscape scenic" --rating g
+./boorupaper.sh --server danbooru --tags "1girl solo" --min-score 20 --order score
 ```
 
 ### Scheduled Rotation
@@ -163,6 +169,7 @@ MIN_SCORE="15"
 
 | Category | Options |
 |----------|---------|
+| Server | `BASE_URL`, `SERVER_TYPE`, `DANBOORU_LOGIN`, `DANBOORU_API_KEY`, `USER_AGENT` |
 | Search | `TAGS`, `LIMIT`, `RATING`, `ORDER`, `PAGE` |
 | Filters | `MIN_SCORE`, `ARTIST`, `POOL_ID`, resolution & size limits |
 | Animated | `PREFERRED_FORMAT`, `ANIMATED_ONLY` |
@@ -174,13 +181,34 @@ MIN_SCORE="15"
 
 For the full list with defaults and descriptions, see [`boorupaper.conf`](boorupaper.conf).
 
-### Other Moebooru Instances
+### Other Servers
 
-You can point Boorupaper at a different Moebooru-based site by setting `BASE_URL` in your config:
+Boorupaper supports Moebooru-based sites (Konachan, Yande.re, etc.) and Danbooru.
+Server type is auto-detected from `BASE_URL`, or set explicitly:
 
 ```bash
+# Use a different Moebooru instance
 BASE_URL="https://yoursite.example.com"
+
+# Or use Danbooru
+BASE_URL="https://danbooru.donmai.us"
+SERVER_TYPE="danbooru"
+
+# Or pass via CLI
+./boorupaper.sh --server danbooru --tags "landscape"
 ```
+
+For Danbooru, you can optionally set authentication credentials in your config
+(required for some restricted content):
+
+```bash
+DANBOORU_LOGIN="your_username"
+DANBOORU_API_KEY="your_api_key"
+```
+
+> **Note:** Danbooru limits anonymous users to 3 tags per query. Boorupaper
+> automatically manages this by fitting as many filters as possible into the
+> query and applying the rest client-side.
 
 ## Project Structure
 
@@ -203,6 +231,8 @@ boorupaper/
 │   └── notifications.sh      # notify-send wrappers
 ├── man/
 │   └── boorupaper.conf.5      # Man page for config options
+├── docs/
+│   └── danbooru-api.md        # Danbooru API reference
 ├── tests/                    # Bats test suite
 └── api_doc.md                # Moebooru API reference
 ```
@@ -237,7 +267,9 @@ bash -n boorupaper.sh && for f in lib/*.sh; do bash -n "$f"; done
 |---------|-----|
 | No wallpaper tool found | Install one: `awww`/`feh` (recommended) |
 | No suitable image found | Relax filters, increase `--limit`, try different tags |
-| Download fails | Check internet, verify Konachan is reachable |
+| Download fails | Check internet, verify the target site is reachable |
+| Danbooru: "cannot search for more than N tags" | Reduce `--tags` to 2 or fewer; Boorupaper auto-manages the tag budget |
+| Danbooru: "database timed out" | Danbooru server overload; retry or use fewer metatags (`--min-score`, `--order score`) |
 | Wrong tool used | Re-run `--init-interactive` or set `WALLPAPER_COMMAND` manually |
 | GIF artifacts | Ensure `awww-daemon` is running (auto-started) |
 
@@ -258,4 +290,5 @@ MIT — see [LICENSE](LICENSE).
 ## Acknowledgments
 
 - [Konachan.net](https://konachan.net) for the Moebooru API
+- [Danbooru](https://danbooru.donmai.us) for the Danbooru API
 - Developers of awww, swaybg, hyprpaper, feh, nitrogen, mpvpaper, and all supported tools

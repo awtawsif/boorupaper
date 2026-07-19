@@ -56,6 +56,8 @@ filter_and_select_post() {
 download_wallpaper() {
     local outfile="$1"
     local ENCODED_TAGS
+    local server
+    server=$(detect_server_type)
 
     # Get wallpaper tool for format decisions
     local detection
@@ -75,36 +77,141 @@ download_wallpaper() {
     format_filter=$(get_format_filter "$PREFERRED_FORMAT")
     if [[ -n "$format_filter" && "$effective_tags" != *"$format_filter"* ]]; then
         if [[ -n "$effective_tags" ]]; then
-            effective_tags="${effective_tags}+${format_filter}"
+            effective_tags="${effective_tags} ${format_filter}"
         else
             effective_tags="${format_filter}"
         fi
     fi
-    
-    local encoded_effective_tags="${effective_tags// /+}"
 
     local API_URL
-    if [[ -n "$POOL_ID" ]]; then
-        API_URL="${BASE_URL}/pool/show.json?id=${POOL_ID}"
-    else
-        API_URL="${BASE_URL}${POST_ENDPOINT}?limit=${LIMIT}&page=${PAGE}&tags=${encoded_effective_tags}+rating:${RATING}+order:${ORDER}"
-        [[ -n "$MIN_SCORE" ]] && API_URL="${API_URL}+score:>=${MIN_SCORE}"
-        [[ -n "$ARTIST" ]] && API_URL="${API_URL}+user:${ARTIST}"
+    local -a curl_args=(-s)
+    curl_args+=(-A "$USER_AGENT")
 
-        if [[ "$RATING" != "s" && "$BASE_URL" == *"konachan.net"* ]]; then
-            echo "Warning: konachan.net is SFW-only and does not serve rating='$RATING' content." >&2
-            echo "Set BASE_URL in your config to a Moebooru instance that supports all ratings." >&2
-            log_warning "konachan.net does not support rating='$RATING'; set BASE_URL in config for full ratings"
+    if [[ "$server" == "danbooru" ]]; then
+        # Danbooru API: anonymous users limited to ~3 tags total.
+        # Metatags (rating:*, order:*, score:*) each count as tags.
+        # Strategy: send user tags + as many metatags as fit, then
+        # filter remaining constraints client-side in jq.
+
+        local danbooru_tags="$effective_tags"
+
+        # Count user tags (space-separated words)
+        local tag_count=0
+        if [[ -n "$danbooru_tags" ]]; then
+            tag_count=$(echo "$danbooru_tags" | wc -w)
+        fi
+        local metatag_budget=$((3 - tag_count))
+        (( metatag_budget < 0 )) && metatag_budget=0
+
+        # Add artist filter (Danbooru uses artist name as tag) — counts as a tag
+        if [[ -n "$ARTIST" ]] && (( metatag_budget > 0 )); then
+            danbooru_tags="${danbooru_tags} ${ARTIST}"
+            (( metatag_budget-- ))
+        fi
+
+        # Add rating as server-side metatag if room
+        local client_side_rating=false
+        if [[ -n "$RATING" ]] && (( metatag_budget > 0 )); then
+            local rating_tag
+            case "$RATING" in
+                g) rating_tag="rating:general" ;;
+                s) rating_tag="rating:sensitive" ;;
+                q) rating_tag="rating:questionable" ;;
+                e) rating_tag="rating:explicit" ;;
+                *) rating_tag="rating:sensitive" ;;
+            esac
+            danbooru_tags="${danbooru_tags} ${rating_tag}"
+            (( metatag_budget-- ))
+        elif [[ -n "$RATING" ]]; then
+            client_side_rating=true
+        fi
+
+        # Add order as server-side metatag if room (only for non-random)
+        local client_side_order=false
+        if [[ "$ORDER" != "random" && -n "$ORDER" ]] && (( metatag_budget > 0 )); then
+            local order_tag
+            case "$ORDER" in
+                score) order_tag="order:score" ;;
+                date)  order_tag="order:date" ;;
+            esac
+            if [[ -n "$order_tag" ]]; then
+                danbooru_tags="${danbooru_tags} ${order_tag}"
+                (( metatag_budget-- ))
+            fi
+        elif [[ "$ORDER" != "random" ]]; then
+            client_side_order=true
+        fi
+
+        # Add score filter as server-side metatag if room
+        local client_side_score=false
+        if [[ -n "$MIN_SCORE" ]] && (( metatag_budget > 0 )); then
+            danbooru_tags="${danbooru_tags} score:>=${MIN_SCORE}"
+            (( metatag_budget-- ))
+        elif [[ -n "$MIN_SCORE" ]]; then
+            client_side_score=true
+        fi
+
+        # Export client-side flags for jq filter
+        export DANBOORU_CLIENT_RATING="$client_side_rating"
+        export DANBOORU_CLIENT_SCORE="$client_side_score"
+        export DANBOORU_CLIENT_ORDER="$client_side_order"
+
+        # For random ordering, use a random page number for variety
+        local effective_page="$PAGE"
+        if [[ "$ORDER" == "random" && "$PAGE" == "1" ]]; then
+            effective_page=$((RANDOM % 50 + 1))
+        fi
+
+        # Encode spaces as + for URL
+        local encoded_tags="${danbooru_tags// /+}"
+
+        if [[ -n "$POOL_ID" ]]; then
+            API_URL="${BASE_URL}/pools/${POOL_ID}.json"
+        else
+            API_URL="${BASE_URL}/posts.json?limit=${LIMIT}&page=${effective_page}&tags=${encoded_tags}"
+        fi
+
+        # Add authentication if credentials are set (raises tag limit)
+        if [[ -n "$DANBOORU_LOGIN" && -n "$DANBOORU_API_KEY" ]]; then
+            curl_args+=(-u "${DANBOORU_LOGIN}:${DANBOORU_API_KEY}")
+        fi
+    else
+        # Moebooru API: tags are + separated, rating/score/order appended
+        local encoded_effective_tags="${effective_tags// /+}"
+
+        if [[ -n "$POOL_ID" ]]; then
+            API_URL="${BASE_URL}/pool/show.json?id=${POOL_ID}"
+        else
+            API_URL="${BASE_URL}/post.json?limit=${LIMIT}&page=${PAGE}&tags=${encoded_effective_tags}+rating:${RATING}+order:${ORDER}"
+            [[ -n "$MIN_SCORE" ]] && API_URL="${API_URL}+score:>=${MIN_SCORE}"
+            [[ -n "$ARTIST" ]] && API_URL="${API_URL}+user:${ARTIST}"
+
+            if [[ "$RATING" != "s" && "$BASE_URL" == *"konachan.net"* ]]; then
+                echo "Warning: konachan.net is SFW-only and does not serve rating='$RATING' content." >&2
+                echo "Set BASE_URL in your config to a Moebooru instance that supports all ratings." >&2
+                log_warning "konachan.net does not support rating='$RATING'; set BASE_URL in config for full ratings"
+            fi
         fi
     fi
 
     echo "-> Querying API: $API_URL"
     log_api_call "$API_URL"
     log_file_operation "create" "temp_json_file"
-    notify_progress_update "Querying API" "Fetching from Konachan..."
+    notify_progress_update "Querying API" "Fetching from ${server}..."
     local json
     json=$(mktemp)
-    if ! curl -sf "$API_URL" > "$json"; then
+    local http_code
+    http_code=$(curl "${curl_args[@]}" -w '%{http_code}' -o "$json" "$API_URL")
+    if [[ "$http_code" -ge 400 ]]; then
+        local error_msg
+        error_msg=$(jq -r '.message // .error // "Unknown error"' "$json" 2>/dev/null || echo "HTTP $http_code")
+        echo "Error: API returned HTTP $http_code — $error_msg" >&2
+        log_error "API request failed: HTTP $http_code — $error_msg"
+        log_file_operation "delete" "$json"
+        rm -f "$json"
+        return 1
+    fi
+    if [[ "$http_code" -eq 0 ]]; then
         echo "Error: failed to reach $BASE_URL" >&2
         log_error "API request failed: $BASE_URL"
         log_file_operation "delete" "$json"
@@ -185,7 +292,7 @@ local IMAGE_URL
     trap 'rm -f "${outfile}.url" "$outfile" 2>/dev/null' RETURN
 
     local tmpfile="${outfile_with_ext}.tmp"
-    if ! curl -sfL "$IMAGE_URL" -o "$tmpfile"; then
+    if ! curl -sfL -A "$USER_AGENT" "$IMAGE_URL" -o "$tmpfile"; then
         echo "Error: download failed." >&2
         log_error "Download failed: $IMAGE_URL"
         log_file_operation "delete" "$tmpfile"

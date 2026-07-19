@@ -12,7 +12,7 @@ display_help() {
     echo "${C_BOLD_WHITE}Usage:${C_RESET} ${C_CYAN}$0${C_RESET} [options]"
     echo ""
 
-    echo "  ${C_BOLD_YELLOW}🔍  Search & Discovery${C_RESET}"
+    echo "  ${C_BOLD_YELLOW}Search & Discovery${C_RESET}"
     echo "    ${C_BOLD_WHITE}-t, --tags${C_RESET} ${C_CYAN}<tags>${C_RESET}       Search tags (e.g. 'scenic sky')"
     echo "    ${C_BOLD_WHITE}-R, --random-tags${C_RESET} ${C_CYAN}<n>${C_RESET}   Select <n> random tags from config"
     echo "    ${C_BOLD_WHITE}-D, --discover-tags${C_RESET}     Discover and show popular tags"
@@ -20,8 +20,9 @@ display_help() {
     echo "    ${C_BOLD_WHITE}-E, --export-tags${C_RESET}       Export discovered tags to file"
     echo ""
 
-    echo "  ${C_BOLD_GREEN}🎯  Filters & Constraints${C_RESET}"
+    echo "  ${C_BOLD_GREEN}Filters & Constraints${C_RESET}"
     echo "    ${C_BOLD_WHITE}-r, --rating${C_RESET} ${C_CYAN}<r>${C_RESET}      s (safe), q (questionable), e (explicit)"
+    echo "    ${C_BOLD_WHITE}                      ${C_RESET}      g (general, Danbooru only)"
     echo "    ${C_BOLD_WHITE}-o, --order${C_RESET} ${C_CYAN}<o>${C_RESET}       random, score, date"
     echo "    ${C_BOLD_WHITE}-l, --limit${C_RESET} ${C_CYAN}<n>${C_RESET}       Number of posts to fetch (default: 50)"
     echo "    ${C_BOLD_WHITE}-p, --page${C_RESET} ${C_CYAN}<p>${C_RESET}        Page number, 'random', or 'MIN-MAX' range"
@@ -51,7 +52,8 @@ display_help() {
     echo "    ${C_BOLD_WHITE}--from-favs${C_RESET}            Set random wallpaper from favorites"
     echo ""
 
-    echo "  ${C_BOLD_BLUE}⚙  System & Maintenance${C_RESET}"
+    echo "  ${C_BOLD_BLUE}System & Maintenance${C_RESET}"
+    echo "    ${C_BOLD_WHITE}--server${C_RESET} ${C_CYAN}<type>${C_RESET}       Server type: moebooru, danbooru (auto-detected)"
     echo "    ${C_BOLD_WHITE}-ii, --init-interactive${C_RESET} Guided setup with interactive prompts"
     echo "    ${C_BOLD_WHITE}-cc, --clean-cache${C_RESET}      Clean preload folders"
     echo "    ${C_BOLD_WHITE}-cf, --clean-force${C_RESET}      Force clean without confirmation"
@@ -82,8 +84,8 @@ parse_cli_args() {
                 fi
                 shift ;;
             -r|--rating)
-                if [[ ! "$2" =~ ^[sSqQeE]$ ]]; then
-                    echo "Error: --rating must be 's', 'q', or 'e', got '$2'" >&2
+                if [[ ! "$2" =~ ^[gGsSqQeE]$ ]]; then
+                    echo "Error: --rating must be 'g' (general), 's' (safe), 'q' (questionable), or 'e' (explicit), got '$2'" >&2
                     exit 1
                 fi
                 RATING="${2,,}"; shift ;;
@@ -160,6 +162,18 @@ parse_cli_args() {
               -cc|--clean-cache) CLEAN_MODE=true ;;
               -cf|--clean-force) CLEAN_MODE=true; FORCE_CLEAN=true ;;
               -ii|--init-interactive) INIT_INTERACTIVE=true ;;
+              --server)
+                if [[ ! "$2" =~ ^(moebooru|danbooru)$ ]]; then
+                    echo "Error: --server must be 'moebooru' or 'danbooru', got '$2'" >&2
+                    exit 1
+                fi
+                SERVER_TYPE="$2"
+                if [[ "$2" == "danbooru" ]]; then
+                    BASE_URL="https://danbooru.donmai.us"
+                elif [[ "$2" == "moebooru" ]]; then
+                    BASE_URL="${BASE_URL:-https://konachan.net}"
+                fi
+                shift ;;
               --fav) FAV_MODE=true ;;
               --list-favs) LIST_FAVS=true ;;
               --from-favs) FROM_FAVS=true ;;

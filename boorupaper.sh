@@ -1,7 +1,7 @@
 #!/bin/bash
 # =================================================================
 # BOORUPAPER — Wallpaper Rotator for Wayland and X11
-# Fetches wallpapers from Moebooru-based sites like Konachan.net
+# Fetches wallpapers from Moebooru-based sites (Konachan, Yande.re) or Danbooru
 # Supports: tags, pools, artist, score filters, size limits, preload cache, cleanup
 # =================================================================
 
@@ -85,6 +85,7 @@ log_command_args
 # Only show run arguments for non-init modes
 if ! $INIT_MODE; then
     echo "Current run arguments:"
+    echo "  Server: $(detect_server_type) ($BASE_URL)"
     echo "  Limit: $LIMIT"
     echo "  Page: $PAGE"
     echo "  Rating: $RATING"

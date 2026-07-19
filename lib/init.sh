@@ -137,7 +137,7 @@ run_init_interactive() {
     echo "  ${C_DIM}You'll be prompted for each setting.${C_RESET}"
     echo "  ${C_DIM}Press ${C_BOLD_WHITE}Enter${C_RESET}${C_DIM} to accept the default value shown in ${C_CYAN}[brackets]${C_RESET}${C_DIM}.${C_RESET}"
 
-    print_section_header "🖥  Display & Wallpaper Tool"
+    print_section_header "Display & Wallpaper Tool"
     input=$(prompt_with_default "Display Server" "$display_server" "wayland, x11")
     display_server="${input:-$display_server}"
 
@@ -150,20 +150,46 @@ run_init_interactive() {
     if [[ -z "$tool_cmd" ]]; then
         echo "" >/dev/tty
         echo "  ${C_BOLD_WHITE}Custom wallpaper command${C_RESET} ${C_DIM}(use ${C_YELLOW}{IMAGE}${C_DIM} as placeholder)${C_RESET}" >/dev/tty
-        echo -n "  ${C_GREEN}▸${C_RESET} " >/dev/tty
+        echo -n "  ${C_GREEN}>${C_RESET} " >/dev/tty
         read -r wallpaper_command </dev/tty
     else
         wallpaper_command="$tool_cmd"
     fi
 
-    print_section_header "🔍  Basic Search"
+    print_section_header "Server & API"
+    echo "  ${C_BOLD_WHITE}Select your booru site:${C_RESET}" >/dev/tty
+    echo "    ${C_CYAN}1${C_RESET}${C_DIM})${C_RESET} Konachan / Yande.re (Moebooru)" >/dev/tty
+    echo "    ${C_CYAN}2${C_RESET}${C_DIM})${C_RESET} Danbooru" >/dev/tty
+    echo -n "  ${C_GREEN}>${C_RESET} " >/dev/tty
+    read -r server_choice </dev/tty
+    case "$server_choice" in
+        2) server_type="danbooru"; server_url="https://danbooru.donmai.us" ;;
+        *) server_type="moebooru"; server_url="https://konachan.net" ;;
+    esac
+
+    input=$(prompt_with_default "Base URL" "$server_url" "https://danbooru.donmai.us")
+    base_url="$input"
+
+    if [[ "$server_type" == "danbooru" ]]; then
+        input=$(prompt_with_default "Danbooru Login" "" "your-username")
+        danbooru_login="$input"
+
+        input=$(prompt_with_default "Danbooru API Key" "" "generate at danbooru.donmai.us/profile")
+        danbooru_api_key="$input"
+    fi
+
+    print_section_header "Basic Search"
     input=$(prompt_with_default "Search Tags" "" "touhou scenic sky")
     tags="$input"
 
     input=$(prompt_with_default "Limit (posts to fetch)" "50" "100")
     limit="$input"
 
-    input=$(prompt_with_default "Rating" "s" "s=safe, q=questionable, e=explicit")
+    if [[ "$server_type" == "danbooru" ]]; then
+        input=$(prompt_with_default "Rating" "s" "g=general, s=sensitive, q=questionable, e=explicit")
+    else
+        input=$(prompt_with_default "Rating" "s" "s=safe, q=questionable, e=explicit")
+    fi
     rating="$input"
 
     input=$(prompt_with_default "Order" "random" "random / score / date")
@@ -297,9 +323,17 @@ run_init_interactive() {
         log_rotation="true"
     fi
 
-    print_section_header "💾  Writing Configuration"
+    print_section_header "Writing Configuration"
     {
         echo "# Boorupaper Configuration - Generated $(date)"
+        echo ""
+        echo "# --- Server ---"
+        echo "SERVER_TYPE=\"$server_type\""
+        echo "BASE_URL=\"$base_url\""
+        if [[ "$server_type" == "danbooru" ]]; then
+            [[ -n "$danbooru_login" ]] && echo "DANBOORU_LOGIN=\"$danbooru_login\""
+            [[ -n "$danbooru_api_key" ]] && echo "DANBOORU_API_KEY=\"$danbooru_api_key\""
+        fi
         echo ""
         echo "# --- Display Server ---"
         echo "DISPLAY_SERVER=\"$display_server\""

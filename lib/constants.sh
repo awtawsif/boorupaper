@@ -4,11 +4,44 @@
 # Global variables, default values, and ANSI color definitions
 # =================================================================
 
-VERSION="1.3.0"
+VERSION="1.4.0"
 
-# API base URL (can be overridden via config file for other Moebooru instances)
+# API base URL (can be overridden via config file for other Moebooru/Danbooru instances)
 BASE_URL="${BASE_URL:-https://konachan.net}"
-POST_ENDPOINT="/post.json"
+
+# Server type: auto-detected from BASE_URL, or set explicitly via --server
+# Supported: "moebooru" (Konachan, Yande.re, etc.) or "danbooru"
+SERVER_TYPE="${SERVER_TYPE:-}"
+
+# Danbooru authentication (optional, required for explicit content)
+DANBOORU_LOGIN="${DANBOORU_LOGIN:-}"
+DANBOORU_API_KEY="${DANBOORU_API_KEY:-}"
+
+# Custom User-Agent (Danbooru requires identifying bots)
+USER_AGENT="${USER_AGENT:-Boorupaper/${VERSION}}"
+
+# Detect server type from BASE_URL if not set
+detect_server_type() {
+    if [[ -n "$SERVER_TYPE" ]]; then
+        echo "$SERVER_TYPE"
+        return
+    fi
+    case "$BASE_URL" in
+        *danbooru*) echo "danbooru" ;;
+        *konachan*|*yande.re|*moebooru*) echo "moebooru" ;;
+        *) echo "moebooru" ;;
+    esac
+}
+
+# Get the post endpoint for the current server type
+get_post_endpoint() {
+    local st
+    st=$(detect_server_type)
+    case "$st" in
+        danbooru)  echo "/posts.json" ;;
+        moebooru)  echo "/post.json" ;;
+    esac
+}
 
 # --- Default Parameters ---
 TAGS=""

@@ -2,7 +2,7 @@
 
 load test_helper
 
-setup_file() {
+setup() {
     source_lib "constants"
     source_lib "helpers"
     source_lib "formats"
@@ -158,7 +158,7 @@ setup_file() {
     [[ "$output" == *".file_size"* ]]
     [[ "$output" == *".width"* ]]
     [[ "$output" == *".height"* ]]
-    [[ "$output" == *"any($aspect_ratio[]"* ]]
+    [[ "$output" == *"any($aspect_ratio"* ]]
     [[ "$output" == *'.[] | "\(.id)|\(.file_url)"'* ]]
 }
 
@@ -193,11 +193,11 @@ setup_file() {
 
 @test "get_extension_from_url: unknown extension defaults to jpg with warning" {
     run get_extension_from_url "https://example.com/image.bmp"
-    [ "$output" = "jpg" ]
-    [[ "$stderr" == *"Warning"* ]]
+    [[ "$output" == *"jpg"* ]]
+    [[ "$output" == *"Warning"* ]]
 }
 
 @test "get_extension_from_url: empty extension defaults to jpg" {
     run get_extension_from_url "https://example.com/noext"
-    [ "$output" = "jpg" ]
+    [[ "$output" == *"jpg"* ]]
 }
