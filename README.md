@@ -2,13 +2,13 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Shell](https://img.shields.io/badge/Shell-Bash-green.svg)](https://www.gnu.org/software/bash/)
-[![Version](https://img.shields.io/badge/version-1.4.0-orange.svg)](https://github.com/awtawsif/boorupaper)
+[![Version](https://img.shields.io/badge/version-1.5.0-orange.svg)](https://github.com/awtawsif/boorupaper)
 
-A wallpaper rotator for Wayland and X11 that fetches high-quality images from [Konachan.net](https://konachan.net) (Moebooru) and [Danbooru](https://danbooru.donmai.us), with automatic server detection.
+A wallpaper rotator for Wayland and X11 that fetches high-quality images from [Konachan.net](https://konachan.net) (Moebooru), [Danbooru](https://danbooru.donmai.us), and [Wallhaven](https://wallhaven.cc), with automatic server detection.
 
 ## Features
 
-- **Multi-site support** — Konachan.net (Moebooru) and Danbooru, auto-detected from config
+- **Multi-site support** — Konachan.net (Moebooru), Danbooru, and Wallhaven, auto-detected from config
 - **Smart filtering** — tags, rating, score, resolution, aspect ratio, file size
 - **Auto-detection** — finds your display server and available wallpaper tools
 - **Background preloading** — instant wallpaper transitions with a per-rating cache
@@ -114,7 +114,7 @@ Run `./boorupaper.sh --help` for the complete option list, or see the table belo
 | `--clean-cache` | `-cc` | Clean preload cache | false |
 | `--clean-force` | `-cf` | Force clean (no prompt) | false |
 | `--init-interactive` | `-ii` | Interactive init wizard | false |
-| `--server` | | Server type: `moebooru` / `danbooru` (auto-detected) | auto |
+| `--server` | | Server type: `moebooru` / `danbooru` / `wallhaven` (auto-detected) | auto |
 | `--version` | `-v` | Show version | |
 | `--help` | `-h` | Show help | |
 
@@ -142,6 +142,10 @@ Run `./boorupaper.sh --help` for the complete option list, or see the table belo
 # Danbooru-specific
 ./boorupaper.sh --server danbooru --tags "landscape scenic" --rating g
 ./boorupaper.sh --server danbooru --tags "1girl solo" --min-score 20 --order score
+
+# Wallhaven-specific (requires API key for non-safe ratings)
+./boorupaper.sh --server wallhaven --tags "landscape" --rating s
+./boorupaper.sh --server wallhaven --tags "anime" --min-score 50 --order score
 ```
 
 ### Scheduled Rotation
@@ -169,7 +173,7 @@ MIN_SCORE="15"
 
 | Category | Options |
 |----------|---------|
-| Server | `BASE_URL`, `SERVER_TYPE`, `DANBOORU_LOGIN`, `DANBOORU_API_KEY`, `USER_AGENT` |
+| Server | `BASE_URL`, `SERVER_TYPE`, `DANBOORU_LOGIN`, `DANBOORU_API_KEY`, `WALLHAVEN_API_KEY`, `USER_AGENT` |
 | Search | `TAGS`, `LIMIT`, `RATING`, `ORDER`, `PAGE` |
 | Filters | `MIN_SCORE`, `ARTIST`, `POOL_ID`, resolution & size limits |
 | Animated | `PREFERRED_FORMAT`, `ANIMATED_ONLY` |
@@ -183,7 +187,7 @@ For the full list with defaults and descriptions, see [`boorupaper.conf`](boorup
 
 ### Other Servers
 
-Boorupaper supports Moebooru-based sites (Konachan, Yande.re, etc.) and Danbooru.
+Boorupaper supports Moebooru-based sites (Konachan, Yande.re, etc.), Danbooru, and Wallhaven.
 Server type is auto-detected from `BASE_URL`, or set explicitly:
 
 ```bash
@@ -194,9 +198,27 @@ BASE_URL="https://yoursite.example.com"
 BASE_URL="https://danbooru.donmai.us"
 SERVER_TYPE="danbooru"
 
+# Or use Wallhaven
+BASE_URL="https://wallhaven.cc"
+SERVER_TYPE="wallhaven"
+
 # Or pass via CLI
 ./boorupaper.sh --server danbooru --tags "landscape"
 ```
+
+#### Wallhaven
+
+Wallhaven uses a single API endpoint for all content ratings. To access sketchy or
+explicit wallpapers, you need an API key from [wallhaven.cc/settings/account](https://wallhaven.cc/settings/account):
+
+```bash
+WALLHAVEN_API_KEY="your_api_key"
+```
+
+Without an API key, only safe wallpapers are returned.
+
+> **Note:** Wallhaven returns a maximum of 24 results per page. The `--limit` flag
+> is capped server-side; use `--page` to paginate through results.
 
 For Danbooru, you can optionally set authentication credentials in your config
 (required for some restricted content):
@@ -232,7 +254,8 @@ boorupaper/
 ├── man/
 │   └── boorupaper.conf.5      # Man page for config options
 ├── docs/
-│   └── danbooru-api.md        # Danbooru API reference
+│   ├── danbooru-api.md        # Danbooru API reference
+│   └── wallhaven-api-v1-docs.md # Wallhaven API reference
 ├── tests/                    # Bats test suite
 └── api_doc.md                # Moebooru API reference
 ```
@@ -270,6 +293,8 @@ bash -n boorupaper.sh && for f in lib/*.sh; do bash -n "$f"; done
 | Download fails | Check internet, verify the target site is reachable |
 | Danbooru: "cannot search for more than N tags" | Reduce `--tags` to 2 or fewer; Boorupaper auto-manages the tag budget |
 | Danbooru: "database timed out" | Danbooru server overload; retry or use fewer metatags (`--min-score`, `--order score`) |
+| Wallhaven: 401 Unauthorized | Set `WALLHAVEN_API_KEY` in config (required for sketchy/explicit ratings) |
+| Wallhaven: no results returned | Try broader tags, or check that `--rating s` matches available content |
 | Wrong tool used | Re-run `--init-interactive` or set `WALLPAPER_COMMAND` manually |
 | GIF artifacts | Ensure `awww-daemon` is running (auto-started) |
 
@@ -291,4 +316,5 @@ MIT — see [LICENSE](LICENSE).
 
 - [Konachan.net](https://konachan.net) for the Moebooru API
 - [Danbooru](https://danbooru.donmai.us) for the Danbooru API
+- [Wallhaven](https://wallhaven.cc) for the Wallhaven API
 - Developers of awww, swaybg, hyprpaper, feh, nitrogen, mpvpaper, and all supported tools

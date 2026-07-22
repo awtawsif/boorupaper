@@ -13,7 +13,53 @@ discover_tags() {
 
     echo "Discovering tags..."
 
-    if [[ "$server" == "danbooru" ]]; then
+    if [[ "$server" == "wallhaven" ]]; then
+        # Wallhaven has no tag API — scrape the HTML tags page instead
+        local sort_path="popular"
+        case "$order" in
+            count) sort_path="popular" ;;
+            date)  sort_path="" ;;
+            *)     sort_path="popular" ;;
+        esac
+
+        local tags_url="${BASE_URL}/tags"
+        [[ -n "$sort_path" ]] && tags_url="${tags_url}/${sort_path}"
+
+        local html
+        html=$(mktemp)
+        if ! curl -sfA "$USER_AGENT" "$tags_url" > "$html"; then
+            echo "Error: Failed to fetch Wallhaven tags page" >&2
+            rm -f "$html"
+            return 1
+        fi
+
+        # Extract tag names from title attributes in taglist-name elements
+        local tags_output
+        tags_output=$(grep -oP 'taglist-name.*?title="[^"]*"' "$html" \
+            | grep -oP 'title="\K[^"]+' \
+            | head -"$limit")
+
+        if [[ -z "$tags_output" ]]; then
+            echo "Error: No tags found on Wallhaven tags page" >&2
+            rm -f "$html"
+            return 1
+        fi
+
+        if $EXPORT_TAGS; then
+            local tags_list exported_file
+            tags_list=$(grep -oP 'taglist-name.*?title="[^"]*"' "$html" \
+                | grep -oP 'title="\K[^"]+' \
+                | head -"$limit")
+            exported_file=$(get_exported_tags_file)
+            mkdir -p "$(dirname "$exported_file")"
+            echo "$tags_list" > "$exported_file"
+            echo "Exported $limit tags to $exported_file"
+        else
+            echo "$tags_output"
+        fi
+        rm -f "$html"
+        return 0
+    elif [[ "$server" == "danbooru" ]]; then
         local api_url="${BASE_URL}/tags.json?search[order]=${order}&search[hide_empty]=true&limit=${limit}"
         [[ -n "$pattern" ]] && api_url="${api_url}&search[name_matches]=${pattern}"
 
@@ -77,7 +123,11 @@ discover_artists() {
 
     echo "Discovering artists..."
 
-    if [[ "$server" == "danbooru" ]]; then
+    if [[ "$server" == "wallhaven" ]]; then
+        echo "Wallhaven does not support artist discovery."
+        echo "Use --tags @username to search by uploader."
+        return 0
+    elif [[ "$server" == "danbooru" ]]; then
         local api_url="${BASE_URL}/artists.json?search[order]=name&limit=${limit}"
         [[ -n "$pattern" ]] && api_url="${api_url}&search[name_matches]=${pattern}"
 
@@ -119,7 +169,10 @@ list_pools() {
 
     echo "Listing pools..."
 
-    if [[ "$server" == "danbooru" ]]; then
+    if [[ "$server" == "wallhaven" ]]; then
+        echo "Wallhaven does not support pools."
+        return 0
+    elif [[ "$server" == "danbooru" ]]; then
         local api_url="${BASE_URL}/pools.json?limit=${limit}&search[order]=post_count"
         [[ -n "$query" ]] && api_url="${api_url}&search[name_contains]=${query}"
 

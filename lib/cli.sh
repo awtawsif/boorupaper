@@ -53,7 +53,7 @@ display_help() {
     echo ""
 
     echo "  ${C_BOLD_BLUE}System & Maintenance${C_RESET}"
-    echo "    ${C_BOLD_WHITE}--server${C_RESET} ${C_CYAN}<type>${C_RESET}       Server type: moebooru, danbooru (auto-detected)"
+    echo "    ${C_BOLD_WHITE}--server${C_RESET} ${C_CYAN}<type>${C_RESET}       Server type: moebooru, danbooru, wallhaven (auto-detected)"
     echo "    ${C_BOLD_WHITE}-ii, --init-interactive${C_RESET} Guided setup with interactive prompts"
     echo "    ${C_BOLD_WHITE}-cc, --clean-cache${C_RESET}      Clean preload folders"
     echo "    ${C_BOLD_WHITE}-cf, --clean-force${C_RESET}      Force clean without confirmation"
@@ -168,8 +168,8 @@ parse_cli_args() {
               -cf|--clean-force) CLEAN_MODE=true; FORCE_CLEAN=true ;;
               -ii|--init-interactive) INIT_INTERACTIVE=true ;;
               --server)
-                if [[ ! "$2" =~ ^(moebooru|danbooru)$ ]]; then
-                    echo "Error: --server must be 'moebooru' or 'danbooru', got '$2'" >&2
+                if [[ ! "$2" =~ ^(moebooru|danbooru|wallhaven)$ ]]; then
+                    echo "Error: --server must be 'moebooru', 'danbooru', or 'wallhaven', got '$2'" >&2
                     exit 1
                 fi
                 SERVER_TYPE="$2"
@@ -177,6 +177,8 @@ parse_cli_args() {
                     BASE_URL="https://danbooru.donmai.us"
                 elif [[ "$2" == "moebooru" ]]; then
                     BASE_URL="https://konachan.net"
+                elif [[ "$2" == "wallhaven" ]]; then
+                    BASE_URL="https://wallhaven.cc"
                 fi
                 shift ;;
               --fav) FAV_MODE=true ;;

@@ -163,6 +163,28 @@ JQFILTER
                 echo 'if type == "array" then . else .posts? // . end | .[] | "\(.id)|\(.file_url)"'
             fi
         fi
+    elif [[ "$server" == "wallhaven" ]]; then
+        if [[ "$use_filters" == "true" ]]; then
+            cat <<JQFILTER
+.data // . |
+ map(select(
+  type == "object" and
+  .file_size != null and
+  .dimension_x != null and
+  .dimension_y != null and
+  (.file_size <= \$max_size or \$max_size == 0) and
+  (.file_size >= \$min_size or \$min_size == 0) and
+  (.dimension_x <= \$max_width or \$max_width == 0) and
+  (.dimension_x >= \$min_width or \$min_width == 0) and
+  (.dimension_y <= \$max_height or \$max_height == 0) and
+  (.dimension_y >= \$min_height or \$min_height == 0) and
+  (if (\$aspect_ratio | length == 0) then true else . as \$p | any(\$aspect_ratio[]; . as \$r | (\$p.dimension_x / \$p.dimension_y >= (\$r - 0.02) and \$p.dimension_x / \$p.dimension_y <= (\$r + 0.02))) end)
+ )) |
+ .[] | "\(.id)|\(.path)"
+JQFILTER
+        else
+            echo '.data // . | .[] | "\(.id)|\(.path)"'
+        fi
     else
         if [[ "$use_filters" == "true" ]]; then
             cat <<'JQFILTER'
@@ -246,6 +268,29 @@ JQFILTER
             else
                 echo 'if type == "array" then . else .posts? // . end | map([.id, (.score // 0), (.uploader_id // "unknown"), .image_width, .image_height, (.file_size|tostring), (.tag_string | .[0:50])]) | .[] | @tsv'
             fi
+        fi
+    elif [[ "$server" == "wallhaven" ]]; then
+        if [[ "$use_filters" == "true" ]]; then
+            cat <<JQFILTER
+.data // . |
+ map(select(
+    type == "object" and
+    .file_size != null and
+    .dimension_x != null and
+    .dimension_y != null and
+    (.file_size <= \$max_size or \$max_size == 0) and
+    (.file_size >= \$min_size or \$min_size == 0) and
+    (.dimension_x <= \$max_width or \$max_width == 0) and
+    (.dimension_x >= \$min_width or \$min_width == 0) and
+    (.dimension_y <= \$max_height or \$max_height == 0) and
+    (.dimension_y >= \$min_height or \$min_height == 0) and
+    (if (\$aspect_ratio | length == 0) then true else . as \$p | any(\$aspect_ratio[]; . as \$r | (\$p.dimension_x / \$p.dimension_y >= (\$r - 0.02) and \$p.dimension_x / \$p.dimension_y <= (\$r + 0.02))) end)
+ )) |
+ map([.id, (.views // 0), (.favorites // 0), .dimension_x, .dimension_y, (.file_size|tostring), ""]) |
+ .[] | @tsv
+JQFILTER
+        else
+            echo '.data // . | map([.id, (.views // 0), (.favorites // 0), .dimension_x, .dimension_y, (.file_size|tostring), ""]) | .[] | @tsv'
         fi
     else
         if [[ "$use_filters" == "true" ]]; then

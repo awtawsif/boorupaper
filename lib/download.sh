@@ -175,6 +175,74 @@ download_wallpaper() {
         if [[ -n "$DANBOORU_LOGIN" && -n "$DANBOORU_API_KEY" ]]; then
             curl_args+=(-u "${DANBOORU_LOGIN}:${DANBOORU_API_KEY}")
         fi
+    elif [[ "$server" == "wallhaven" ]]; then
+        # Wallhaven API: /api/v1/search with purity, categories, sorting
+        # Rating maps to purity: s=sfw(100), q=sketchy(110), e=all(111)
+        # Categories default to general+anime (110)
+
+        local wallhaven_purity="100"
+        case "$RATING" in
+            s) wallhaven_purity="100" ;;
+            q) wallhaven_purity="110" ;;
+            e) wallhaven_purity="111" ;;
+            *) wallhaven_purity="100" ;;
+        esac
+
+        # Warn if sketchy/explicit requested without API key (will 401)
+        if [[ "$wallhaven_purity" != "100" && -z "$WALLHAVEN_API_KEY" ]]; then
+            echo "Warning: rating='$RATING' requires a Wallhaven API key. Set WALLHAVEN_API_KEY in your config." >&2
+            log_warning "Wallhaven sketchy/explicit rating without API key"
+        fi
+
+        local wallhaven_categories="${WALLHAVEN_CATEGORIES:-110}"
+
+        local wallhaven_sorting="random"
+        case "$ORDER" in
+            random) wallhaven_sorting="random" ;;
+            score)  wallhaven_sorting="toplist" ;;
+            date)   wallhaven_sorting="date_added" ;;
+            *)      wallhaven_sorting="random" ;;
+        esac
+
+        local wallhaven_q=""
+        if [[ -n "$effective_tags" ]]; then
+            wallhaven_q="${effective_tags}"
+        fi
+
+        # Add artist as @username search if specified
+        if [[ -n "$ARTIST" ]]; then
+            if [[ -n "$wallhaven_q" ]]; then
+                wallhaven_q="${wallhaven_q} @${ARTIST}"
+            else
+                wallhaven_q="@${ARTIST}"
+            fi
+        fi
+
+        # Build API URL
+        API_URL="${BASE_URL}/api/v1/search?categories=${wallhaven_categories}&purity=${wallhaven_purity}&sorting=${wallhaven_sorting}&page=${PAGE}"
+
+        [[ -n "$wallhaven_q" ]] && API_URL="${API_URL}&q=$(printf '%s' "$wallhaven_q" | jq -sRr @uri)"
+
+        # Add minimum resolution filter
+        if [[ -n "$MIN_WIDTH" && -n "$MIN_HEIGHT" ]]; then
+            API_URL="${API_URL}&atleast=${MIN_WIDTH}x${MIN_HEIGHT}"
+        elif [[ -n "$MIN_WIDTH" ]]; then
+            API_URL="${API_URL}&atleast=${MIN_WIDTH}x0"
+        elif [[ -n "$MIN_HEIGHT" ]]; then
+            API_URL="${API_URL}&atleast=0x${MIN_HEIGHT}"
+        fi
+
+        # Add seed for reproducible random across pages
+        if [[ "$wallhaven_sorting" == "random" ]]; then
+            local seed
+            seed=$(head -c 6 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9' | head -c 6)
+            API_URL="${API_URL}&seed=${seed}"
+        fi
+
+        # Add API key if available
+        if [[ -n "$WALLHAVEN_API_KEY" ]]; then
+            curl_args+=(-H "X-API-Key: ${WALLHAVEN_API_KEY}")
+        fi
     else
         # Moebooru API: tags are + separated, rating/score/order appended
         local encoded_effective_tags="${effective_tags// /+}"

@@ -11,7 +11,7 @@ LIB_DIR="$PROJECT_ROOT/lib"
 setup() {
     TEST_TMPDIR=$(mktemp -d)
     export HOME="$TEST_TMPDIR"
-    mkdir -p "$HOME/.config/konapaper"
+    mkdir -p "$HOME/.config/boorupaper"
 }
 
 teardown() {

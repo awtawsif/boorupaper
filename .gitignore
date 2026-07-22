@@ -13,8 +13,8 @@
 downloaded_ids
 downloaded_ids.lock
 
-# Discovered tags (generated)
-discovered_tags.txt
+# Discovered tags (generated, per-site)
+discovered_tags_*.txt
 
 # OS files
 .DS_Store

@@ -4,18 +4,21 @@
 # Global variables, default values, and ANSI color definitions
 # =================================================================
 
-VERSION="1.4.0"
+VERSION="1.5.0"
 
 # API base URL (can be overridden via config file for other Moebooru/Danbooru instances)
 BASE_URL="${BASE_URL:-https://konachan.net}"
 
 # Server type: auto-detected from BASE_URL, or set explicitly via --server
-# Supported: "moebooru" (Konachan, Yande.re, etc.) or "danbooru"
+# Supported: "moebooru" (Konachan, Yande.re, etc.), "danbooru", or "wallhaven"
 SERVER_TYPE="${SERVER_TYPE:-}"
 
 # Danbooru authentication (optional, required for explicit content)
 DANBOORU_LOGIN="${DANBOORU_LOGIN:-}"
 DANBOORU_API_KEY="${DANBOORU_API_KEY:-}"
+
+# Wallhaven API key (optional, required for NSFW and user settings)
+WALLHAVEN_API_KEY="${WALLHAVEN_API_KEY:-}"
 
 # Custom User-Agent (Danbooru requires identifying bots)
 USER_AGENT="${USER_AGENT:-Boorupaper/${VERSION}}"
@@ -28,6 +31,7 @@ detect_server_type() {
     fi
     case "$BASE_URL" in
         *danbooru*) echo "danbooru" ;;
+        *wallhaven*) echo "wallhaven" ;;
         *konachan*|*yande.re|*moebooru*) echo "moebooru" ;;
         *) echo "moebooru" ;;
     esac
@@ -38,8 +42,9 @@ get_post_endpoint() {
     local st
     st=$(detect_server_type)
     case "$st" in
-        danbooru)  echo "/posts.json" ;;
-        moebooru)  echo "/post.json" ;;
+        danbooru)   echo "/posts.json" ;;
+        moebooru)   echo "/post.json" ;;
+        wallhaven)  echo "" ;;
     esac
 }
 
@@ -97,6 +102,7 @@ get_site_name() {
         *konachan.com)        echo "konachan" ;;
         *yande.re)            echo "yandere" ;;
         *konachan.moe)        echo "konachan" ;;
+        *wallhaven.cc)        echo "wallhaven" ;;
         *)                    echo "$host" | sed 's/\.[^.]*$//' ;;
     esac
 }

@@ -160,10 +160,12 @@ run_init_interactive() {
     echo "  ${C_BOLD_WHITE}Select your booru site:${C_RESET}" >/dev/tty
     echo "    ${C_CYAN}1${C_RESET}${C_DIM})${C_RESET} Konachan / Yande.re (Moebooru)" >/dev/tty
     echo "    ${C_CYAN}2${C_RESET}${C_DIM})${C_RESET} Danbooru" >/dev/tty
+    echo "    ${C_CYAN}3${C_RESET}${C_DIM})${C_RESET} Wallhaven" >/dev/tty
     echo -n "  ${C_GREEN}>${C_RESET} " >/dev/tty
     read -r server_choice </dev/tty
     case "$server_choice" in
         2) server_type="danbooru"; server_url="https://danbooru.donmai.us" ;;
+        3) server_type="wallhaven"; server_url="https://wallhaven.cc" ;;
         *) server_type="moebooru"; server_url="https://konachan.net" ;;
     esac
 
@@ -180,6 +182,9 @@ run_init_interactive() {
 
         input=$(prompt_with_default "Danbooru API Key" "" "generate at danbooru.donmai.us/profile")
         danbooru_api_key="$input"
+    elif [[ "$server_type" == "wallhaven" ]]; then
+        input=$(prompt_with_default "Wallhaven API Key" "" "optional, get from wallhaven.cc/settings/account")
+        wallhaven_api_key="$input"
     fi
 
     print_section_header "Basic Search"
@@ -338,6 +343,8 @@ run_init_interactive() {
         if [[ "$server_type" == "danbooru" ]]; then
             [[ -n "$danbooru_login" ]] && echo "DANBOORU_LOGIN=\"$danbooru_login\""
             [[ -n "$danbooru_api_key" ]] && echo "DANBOORU_API_KEY=\"$danbooru_api_key\""
+        elif [[ "$server_type" == "wallhaven" ]]; then
+            [[ -n "$wallhaven_api_key" ]] && echo "WALLHAVEN_API_KEY=\"$wallhaven_api_key\""
         fi
         echo ""
         echo "# --- Display Server ---"

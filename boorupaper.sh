@@ -1,7 +1,7 @@
 #!/bin/bash
 # =================================================================
 # BOORUPAPER — Wallpaper Rotator for Wayland and X11
-# Fetches wallpapers from Moebooru-based sites (Konachan, Yande.re) or Danbooru
+# Fetches wallpapers from Moebooru-based sites (Konachan, Yande.re), Danbooru, or Wallhaven
 # Supports: tags, pools, artist, score filters, size limits, preload cache, cleanup
 # =================================================================
 
