@@ -19,18 +19,19 @@ discover_tags() {
 
         local json
         json=$(mktemp)
-        local -a curl_args=(-sf -A "$USER_AGENT")
+        local -a curl_args=(-sgf -A "$USER_AGENT")
         [[ -n "$DANBOORU_LOGIN" && -n "$DANBOORU_API_KEY" ]] && curl_args+=(-u "${DANBOORU_LOGIN}:${DANBOORU_API_KEY}")
 
         if curl "${curl_args[@]}" "$api_url" > "$json"; then
             local tags_output
             tags_output=$(jq -r '.[] | "\(.name) (\(.post_count) posts)"' "$json" | head -"$limit")
             if $EXPORT_TAGS; then
-                local tags_list
+                local tags_list exported_file
                 tags_list=$(jq -r '.[].name' "$json" | head -"$limit")
-                mkdir -p "$(dirname "$EXPORTED_TAGS_FILE")"
-                echo "$tags_list" > "$EXPORTED_TAGS_FILE"
-                echo "Exported $limit tags to $EXPORTED_TAGS_FILE"
+                exported_file=$(get_exported_tags_file)
+                mkdir -p "$(dirname "$exported_file")"
+                echo "$tags_list" > "$exported_file"
+                echo "Exported $limit tags to $exported_file"
             else
                 echo "$tags_output"
             fi
@@ -50,11 +51,12 @@ discover_tags() {
             local tags_output
             tags_output=$(xmllint --xpath '//tag' "$xml" | sed -n 's/.*name="\([^"]*\)".*count="\([^"]*\)".*/\1 (\2 posts)/p' | head -"$limit")
             if $EXPORT_TAGS; then
-                local tags_list
+                local tags_list exported_file
                 tags_list=$(xmllint --xpath '//tag' "$xml" | sed -n 's/.*name="\([^"]*\)".*/\1/p' | head -"$limit")
-                mkdir -p "$(dirname "$EXPORTED_TAGS_FILE")"
-                echo "$tags_list" > "$EXPORTED_TAGS_FILE"
-                echo "Exported $limit tags to $EXPORTED_TAGS_FILE"
+                exported_file=$(get_exported_tags_file)
+                mkdir -p "$(dirname "$exported_file")"
+                echo "$tags_list" > "$exported_file"
+                echo "Exported $limit tags to $exported_file"
             else
                 echo "$tags_output"
             fi
@@ -81,7 +83,7 @@ discover_artists() {
 
         local json
         json=$(mktemp)
-        local -a curl_args=(-sf -A "$USER_AGENT")
+        local -a curl_args=(-sgf -A "$USER_AGENT")
         [[ -n "$DANBOORU_LOGIN" && -n "$DANBOORU_API_KEY" ]] && curl_args+=(-u "${DANBOORU_LOGIN}:${DANBOORU_API_KEY}")
 
         if curl "${curl_args[@]}" "$api_url" > "$json"; then
@@ -123,7 +125,7 @@ list_pools() {
 
         local json
         json=$(mktemp)
-        local -a curl_args=(-sf -A "$USER_AGENT")
+        local -a curl_args=(-sgf -A "$USER_AGENT")
         [[ -n "$DANBOORU_LOGIN" && -n "$DANBOORU_API_KEY" ]] && curl_args+=(-u "${DANBOORU_LOGIN}:${DANBOORU_API_KEY}")
 
         if curl "${curl_args[@]}" "$api_url" > "$json"; then

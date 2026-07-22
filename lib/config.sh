@@ -14,9 +14,20 @@ load_config() {
         source "$CONFIG_FILE"
     fi
 
-    # If RANDOM_TAGS_LIST is a file path (no parentheses) and exists, load tags from it
-    if [[ -n "$RANDOM_TAGS_LIST" && "$RANDOM_TAGS_LIST" != *'('* && -f "$RANDOM_TAGS_LIST" ]]; then
-        mapfile -t RANDOM_TAGS_LIST < "$RANDOM_TAGS_LIST"
+    # If RANDOM_TAGS_LIST is a file path (no parentheses), load tags from it
+    if [[ -n "$RANDOM_TAGS_LIST" && "$RANDOM_TAGS_LIST" != *'('* ]]; then
+        local tags_file="$RANDOM_TAGS_LIST"
+        # Prefer site-specific file (e.g. discovered_tags_konachan.txt)
+        local site_file
+        site_file=$(get_exported_tags_file)
+        if [[ -f "$site_file" ]]; then
+            tags_file="$site_file"
+        elif [[ -f "$tags_file" ]]; then
+            tags_file="$tags_file"
+        fi
+        if [[ -f "$tags_file" ]]; then
+            mapfile -t RANDOM_TAGS_LIST < "$tags_file"
+        fi
     fi
 
     WALLPAPER_COMMAND=${WALLPAPER_COMMAND:-""}

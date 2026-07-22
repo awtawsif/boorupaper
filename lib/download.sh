@@ -84,7 +84,7 @@ download_wallpaper() {
     fi
 
     local API_URL
-    local -a curl_args=(-s)
+    local -a curl_args=(-sg)
     curl_args+=(-A "$USER_AGENT")
 
     if [[ "$server" == "danbooru" ]]; then

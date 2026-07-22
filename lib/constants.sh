@@ -87,7 +87,25 @@ LOG_ROTATION=true
 DOWNLOADED_IDS_FILE="$HOME/.config/boorupaper/downloaded_ids"
 
 # --- Discovery ---
-EXPORTED_TAGS_FILE="$HOME/.config/boorupaper/discovered_tags.txt"
+get_site_name() {
+    local host
+    host=$(echo "$BASE_URL" | sed 's|https\?://||; s|/.*||')
+    # Strip common TLDs and subdomains to get site name
+    case "$host" in
+        *danbooru.donmai.us)  echo "danbooru" ;;
+        *konachan.net)        echo "konachan" ;;
+        *konachan.com)        echo "konachan" ;;
+        *yande.re)            echo "yandere" ;;
+        *konachan.moe)        echo "konachan" ;;
+        *)                    echo "$host" | sed 's/\.[^.]*$//' ;;
+    esac
+}
+
+get_exported_tags_file() {
+    local site
+    site=$(get_site_name)
+    echo "$HOME/.config/boorupaper/discovered_tags_${site}.txt"
+}
 
 # --- Notification Variables ---
 ENABLE_NOTIFICATIONS=false

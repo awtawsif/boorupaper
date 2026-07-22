@@ -15,7 +15,7 @@ display_help() {
     echo "  ${C_BOLD_YELLOW}Search & Discovery${C_RESET}"
     echo "    ${C_BOLD_WHITE}-t, --tags${C_RESET} ${C_CYAN}<tags>${C_RESET}       Search tags (e.g. 'scenic sky')"
     echo "    ${C_BOLD_WHITE}-R, --random-tags${C_RESET} ${C_CYAN}<n>${C_RESET}   Select <n> random tags from config"
-    echo "    ${C_BOLD_WHITE}-D, --discover-tags${C_RESET}     Discover and show popular tags"
+    echo "    ${C_BOLD_WHITE}-D, --discover-tags${C_RESET} ${C_CYAN}[n]${C_RESET}      Discover popular tags (optional: count, default 20)"
     echo "    ${C_BOLD_WHITE}-A, --discover-artists${C_RESET}  Discover and show popular artists"
     echo "    ${C_BOLD_WHITE}-E, --export-tags${C_RESET}       Export discovered tags to file"
     echo ""
@@ -148,7 +148,12 @@ parse_cli_args() {
             --animated-only) ANIMATED_ONLY=true ;;
             --force-set) FORCE_SET=true ;;
             -d|--dry-run) DRY_RUN=true ;;
-            -D|--discover-tags) DISCOVER_TAGS=true ;;
+            -D|--discover-tags)
+                DISCOVER_TAGS=true
+                if [[ -n "$2" && "$2" =~ ^[0-9]+$ && "$2" -gt 0 ]]; then
+                    DISCOVER_LIMIT="$2"; shift
+                fi
+                ;;
             -A|--discover-artists) DISCOVER_ARTISTS=true ;;
             -L|--list-pools) LIST_POOLS=true ;;
             -S|--search-pools)
@@ -171,7 +176,7 @@ parse_cli_args() {
                 if [[ "$2" == "danbooru" ]]; then
                     BASE_URL="https://danbooru.donmai.us"
                 elif [[ "$2" == "moebooru" ]]; then
-                    BASE_URL="${BASE_URL:-https://konachan.net}"
+                    BASE_URL="https://konachan.net"
                 fi
                 shift ;;
               --fav) FAV_MODE=true ;;

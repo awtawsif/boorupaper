@@ -170,6 +170,10 @@ run_init_interactive() {
     input=$(prompt_with_default "Base URL" "$server_url" "https://danbooru.donmai.us")
     base_url="$input"
 
+    # Update globals so detect_server_type() and get_exported_tags_file() work correctly
+    SERVER_TYPE="$server_type"
+    BASE_URL="$base_url"
+
     if [[ "$server_type" == "danbooru" ]]; then
         input=$(prompt_with_default "Danbooru Login" "" "your-username")
         danbooru_login="$input"
@@ -251,11 +255,12 @@ run_init_interactive() {
 
             echo ""
             echo "  ${C_BOLD_WHITE}Discovering tags...${C_RESET}"
-            EXPORTED_TAGS_FILE="$HOME/.config/boorupaper/discovered_tags.txt"
             EXPORT_TAGS=true
             discover_tags "" count "$discover_count"
 
-            random_tags_list="\"$HOME/.config/boorupaper/discovered_tags.txt\""
+            local exported_file
+            exported_file=$(get_exported_tags_file)
+            random_tags_list="\"$exported_file\""
 
             input=$(prompt_with_default "Random Tags Count" "3" "5")
             random_tags_count="$input"
@@ -369,6 +374,7 @@ run_init_interactive() {
         echo "# --- Random Tags ---"
         echo "RANDOM_TAGS_COUNT=$random_tags_count"
         echo "RANDOM_TAGS_LIST=$random_tags_list"
+        [[ -n "$discover_count" ]] && echo "DISCOVER_LIMIT=$discover_count"
         echo ""
         echo "# --- Cache & Performance ---"
         echo "PRELOAD_COUNT=$preload_count"
